@@ -118,7 +118,38 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+// TEMPORARY - Admin creation endpoint (REMOVE AFTER USE!)
+app.get('/create-admin-now', async (req, res) => {
+  try {
+    const User = (await import('./models/User.js')).default;
+    
+    const adminData = {
+      name: process.env.ADMIN_NAME || 'Admin',
+      email: process.env.ADMIN_EMAIL || 'admin@educationalweb.com',
+      password: process.env.ADMIN_PASSWORD || 'Admin@123',
+      authProvider: 'local',
+      role: 'admin',
+      isEmailVerified: true,
+      isPremium: true
+    };
 
+    const existingAdmin = await User.findOne({ email: adminData.email });
+    
+    if (existingAdmin) {
+      existingAdmin.password = adminData.password;
+      existingAdmin.role = 'admin';
+      existingAdmin.isEmailVerified = true;
+      existingAdmin.isPremium = true;
+      await existingAdmin.save();
+      return res.json({ success: true, message: 'Admin updated', email: existingAdmin.email });
+    }
+
+    const newAdmin = await User.create(adminData);
+    res.json({ success: true, message: 'Admin created', email: newAdmin.email });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 // API routes
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
