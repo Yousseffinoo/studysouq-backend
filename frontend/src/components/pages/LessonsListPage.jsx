@@ -71,8 +71,8 @@ export default function LessonsListPage() {
     return (
       <div className="min-h-screen py-20 px-4 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-[#2F6FED] animate-spin mx-auto mb-4" />
-          <p className="text-[#94A3B8]">Loading lessons...</p>
+          <Loader2 className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
+          <p className="text-white/70">Loading lessons...</p>
         </div>
       </div>
     );
@@ -85,10 +85,10 @@ export default function LessonsListPage() {
         <div className="text-center max-w-md">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold mb-2">Error Loading Lessons</h2>
-          <p className="text-[#94A3B8] mb-4">{error}</p>
+          <p className="text-white/70 mb-4">{error}</p>
           <Link
             to={backLink}
-            className="inline-block px-6 py-3 bg-[#2F6FED] hover:bg-[#2F6FED]/80 rounded-xl transition-colors"
+            className="inline-block px-6 py-3 bg-white text-black hover:bg-white/90 transition-colors font-semibold"
           >
             Go Back
           </Link>
@@ -108,7 +108,7 @@ export default function LessonsListPage() {
       }} transition={{
         duration: 0.4
       }}>
-          <Link to={backLink} className="inline-flex items-center text-[#94A3B8] hover:text-white transition-colors mb-8">
+          <Link to={backLink} className="inline-flex items-center text-white/70 hover:text-white transition-colors mb-8">
             <ArrowLeft className="w-4 h-4 mr-2" />
             {backText}
           </Link>
@@ -124,7 +124,7 @@ export default function LessonsListPage() {
         duration: 0.6
       }} className="mb-12">
           <h1 className="mb-4">{section?.name || subject?.name || 'Lessons'}</h1>
-          <p className="text-[#94A3B8] text-lg">
+          <p className="text-white/70 text-lg">
             {section?.description || subject?.description || 'Select a lesson to begin learning'}
           </p>
         </motion.div>
@@ -145,20 +145,20 @@ export default function LessonsListPage() {
           y: -8
         }}>
               <Link to={`/lesson/${lessonId}`} className="block group h-full">
-                <div className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-6 h-full hover:border-white/30 transition-all duration-300 hover:shadow-xl flex flex-col">
-                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#2F6FED] to-[#A9C7FF] flex items-center justify-center mb-4">
+                <div className="bg-black border-2 border-white/20 p-6 h-full hover:border-white transition-all duration-300 flex flex-col">
+                  <div className="w-12 h-12 border-2 border-white flex items-center justify-center mb-4">
                     <FileText className="w-6 h-6 text-white" />
                   </div>
-                  
-                  <h3 className="mb-3 group-hover:text-[#A9C7FF] transition-colors duration-300">
+
+                  <h3 className="mb-3 group-hover:scale-105 transition-transform duration-300">
                     {lesson.title}
                   </h3>
-                  
-                  <p className="text-[#94A3B8] text-sm mb-4 flex-1">
+
+                  <p className="text-white/70 text-sm mb-4 flex-1">
                     {lesson.description || 'No description available'}
                   </p>
 
-                  <div className="flex items-center text-[#2F6FED] group-hover:text-[#A9C7FF] transition-colors duration-300 text-sm">
+                  <div className="flex items-center text-white transition-colors duration-300 text-sm">
                     <span>Start Lesson</span>
                     <svg className="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -171,7 +171,7 @@ export default function LessonsListPage() {
         </div>
 
         {lessons.length === 0 && <div className="text-center py-20">
-            <p className="text-gray-800">No lessons available yet. Please check back soon!</p>
+            <p className="text-white/70">No lessons available yet. Please check back soon!</p>
           </div>}
       </div>
     </div>;

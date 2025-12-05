@@ -20,7 +20,7 @@ export default function SectionsPage() {
       try {
         setLoading(true);
         setError(null);
-        
+
         // Fetch subject details
         const subjectResult = await getSubjectById(subjectId);
         if (!subjectResult.success) {
@@ -56,8 +56,8 @@ export default function SectionsPage() {
     return (
       <div className="min-h-screen py-20 px-4 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-[#2F6FED] animate-spin mx-auto mb-4" />
-          <p className="text-[#94A3B8]">Loading sections...</p>
+          <Loader2 className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
+          <p className="text-white/70">Loading sections...</p>
         </div>
       </div>
     );
@@ -70,10 +70,10 @@ export default function SectionsPage() {
         <div className="text-center max-w-md">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold mb-2">Subject Not Found</h2>
-          <p className="text-[#94A3B8] mb-4">{error || 'The subject you are looking for does not exist.'}</p>
+          <p className="text-white/70 mb-4">{error || 'The subject you are looking for does not exist.'}</p>
           <Link
             to="/subjects"
-            className="inline-block px-6 py-3 bg-[#2F6FED] hover:bg-[#2F6FED]/80 rounded-xl transition-colors"
+            className="inline-block px-6 py-3 bg-white text-black hover:bg-white/90 transition-colors font-semibold"
           >
             Back to Subjects
           </Link>
@@ -82,10 +82,11 @@ export default function SectionsPage() {
     );
   }
 
-  // If no sections, redirect to lessons (for subjects without sections like IGCSE)
+  // If no sections, redirect to lessons (for subjects without sections like O-Level)
   if (sections.length === 0) {
     return <Navigate to={`/subjects/${subjectId}/lessons`} replace />;
   }
+
   return <div className="min-h-screen py-20 px-4">
       <div className="max-w-6xl mx-auto">
         <motion.div initial={{
@@ -97,7 +98,7 @@ export default function SectionsPage() {
       }} transition={{
         duration: 0.4
       }}>
-          <Link to="/subjects" className="inline-flex items-center text-[#94A3B8] hover:text-white transition-colors mb-8">
+          <Link to="/subjects" className="inline-flex items-center text-white/70 hover:text-white transition-colors mb-8">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Subjects
           </Link>
@@ -113,7 +114,7 @@ export default function SectionsPage() {
         duration: 0.6
       }} className="text-center mb-16">
           <h1 className="mb-6">{subject.name}</h1>
-          <p className="text-[#94A3B8] text-lg max-w-2xl mx-auto">
+          <p className="text-white/70 text-lg max-w-2xl mx-auto">
             Select a section to access lessons, notes, and practice questions
           </p>
         </motion.div>
@@ -123,7 +124,7 @@ export default function SectionsPage() {
             const sectionId = section._id || section.id;
             const isPremium = section.isPremium || false;
             const userIsPremium = user?.isPremium || false;
-            
+
             const handleSectionClick = (e) => {
               // Check if section is premium
               if (isPremium) {
@@ -134,7 +135,7 @@ export default function SectionsPage() {
                   navigate('/login', { state: { from: `/subjects/${subjectId}` } });
                   return;
                 }
-                
+
                 // Check if user has premium access
                 if (!userIsPremium) {
                   e.preventDefault();
@@ -144,7 +145,7 @@ export default function SectionsPage() {
                 }
               }
             };
-            
+
             return <motion.div key={sectionId} initial={{
           opacity: 0,
           y: 30
@@ -157,14 +158,14 @@ export default function SectionsPage() {
         }} whileHover={{
           y: -8
         }}>
-              <Link 
-                to={`/subjects/${subjectId}/${sectionId}`} 
+              <Link
+                to={`/subjects/${subjectId}/${sectionId}`}
                 onClick={handleSectionClick}
                 className="block group"
               >
-                <div className={`bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border ${isPremium && !userIsPremium ? 'border-[#F7C94C]/50' : 'border-white/10'} rounded-2xl p-8 hover:border-white/30 transition-all duration-300 hover:shadow-xl`}>
+                <div className={`bg-black border-2 ${isPremium && !userIsPremium ? 'border-white' : 'border-white/20'} p-8 hover:border-white transition-all duration-300`}>
                   <div className="flex items-start">
-                    <div className={`w-14 h-14 rounded-xl ${isPremium && !userIsPremium ? 'bg-gradient-to-br from-[#F7C94C] to-[#F7C94C]/80' : 'bg-gradient-to-br from-[#2F6FED] to-[#A9C7FF]'} flex items-center justify-center flex-shrink-0`}>
+                    <div className={`w-14 h-14 border-2 border-white flex items-center justify-center flex-shrink-0`}>
                       {isPremium && !userIsPremium ? (
                         <Lock className="w-7 h-7 text-white" />
                       ) : (
@@ -173,19 +174,19 @@ export default function SectionsPage() {
                     </div>
                     <div className="ml-6 flex-1">
                       <div className="flex items-center gap-2 mb-3">
-                        <h3 className="group-hover:text-[#A9C7FF] transition-colors duration-300">
+                        <h3 className="group-hover:scale-105 transition-transform duration-300">
                           {section.name}
                         </h3>
                         {isPremium && !userIsPremium && (
-                          <span className="px-2 py-1 bg-[#F7C94C]/20 border border-[#F7C94C]/50 rounded text-xs text-[#F7C94C]">
+                          <span className="px-2 py-1 bg-white/10 border border-white text-xs text-white">
                             Premium
                           </span>
                         )}
                       </div>
-                      <p className="text-[#94A3B8] text-sm">
+                      <p className="text-white/70 text-sm">
                         {section.description || 'No description available'}
                       </p>
-                      <div className="mt-4 flex items-center text-[#2F6FED] group-hover:text-[#A9C7FF] transition-colors duration-300">
+                      <div className="mt-4 flex items-center text-white transition-colors duration-300">
                         <span className="text-sm">View Lessons</span>
                         <svg className="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
