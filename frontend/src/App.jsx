@@ -90,6 +90,7 @@ function AppShell() {
             <Route path="/" element={<HomePage />} />
             <Route path="/subjects" element={<SubjectsPage />} />
             <Route path="/subjects/:subjectId" element={<SectionsPage />} />
+            <Route path="/subjects/:subjectId/lessons" element={<LessonsListPage />} />
             <Route path="/subjects/:subjectId/:sectionId" element={<LessonsListPage />} />
             <Route path="/lesson/:lessonId" element={<LessonPage />} />
             <Route path="/lesson/:lessonId/questions" element={<QuestionPage />} />
@@ -142,6 +143,7 @@ function AppShell() {
             <Route path="/" element={<HomePage />} />
             <Route path="/subjects" element={<SubjectsPage />} />
             <Route path="/subjects/:subjectId" element={<SectionsPage />} />
+            <Route path="/subjects/:subjectId/lessons" element={<LessonsListPage />} />
             <Route path="/subjects/:subjectId/:sectionId" element={<LessonsListPage />} />
             <Route path="/lesson/:lessonId" element={<LessonPage />} />
             <Route path="/lesson/:lessonId/questions" element={<QuestionPage />} />

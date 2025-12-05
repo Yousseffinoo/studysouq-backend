@@ -163,22 +163,22 @@ export default function ProfilePage() {
 
             {/* Subscription Status */}
             <div className="space-y-6">
-              <div className={`bg-gradient-to-br ${user.role === 'premium' ? 'from-[#F7C94C]/20 to-[#2F6FED]/20 border-[#F7C94C]/30' : 'from-[#0B1D34] to-[#0B1D34]/50 border-white/10'} border rounded-2xl p-6`}>
+              <div className={`bg-black ${user.role === 'premium' ? 'border-2 border-white' : 'border-2 border-white/20'} p-6`}>
                 <div className="flex items-center mb-4">
-                  <Crown className={`w-6 h-6 mr-2 ${user.role === 'premium' ? 'text-[#F7C94C]' : 'text-white/70'}`} />
+                  <Crown className={`w-6 h-6 mr-2 ${user.role === 'premium' ? 'text-white' : 'text-white/70'}`} />
                   <h3>{user.role === 'premium' ? 'Premium' : 'Free Plan'}</h3>
                 </div>
-                
+
                 <p className="text-white/70 text-sm mb-6">
-                  {user.role === 'premium' 
-                    ? 'You have access to all premium features including notes, unlimited questions, and AI tutor.' 
+                  {user.role === 'premium'
+                    ? 'You have access to all premium features including notes, unlimited questions, and AI tutor.'
                     : 'Upgrade to premium to unlock all features and accelerate your learning.'}
                 </p>
 
                 {user.role !== 'premium' && (
-                  <Link 
-                    to="/pricing" 
-                    className="block w-full py-3 bg-gradient-to-r from-[#F7C94C] to-[#2F6FED] hover:opacity-90 rounded-xl transition-all duration-300 text-center"
+                  <Link
+                    to="/pricing"
+                    className="block w-full py-3 bg-white text-black hover:bg-white/90 transition-colors text-center font-semibold"
                   >
                     Upgrade to Premium
                   </Link>
