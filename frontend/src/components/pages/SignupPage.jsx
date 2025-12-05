@@ -98,11 +98,11 @@ export default function SignupPage() {
           <div className="text-center mb-8">
             <Logo className="w-20 md:w-32 h-auto mx-auto mb-4" />
             <h1 className="mb-2">Create Account</h1>
-            <p className="text-[#94A3B8]">Join thousands of students mastering mathematics</p>
+            <p className="text-white/70">Join thousands of students mastering mathematics</p>
           </div>
 
           {/* Form */}
-          <div className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
+          <div className="bg-black border-2 border-white/20 p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
                   {error}
@@ -113,64 +113,64 @@ export default function SignupPage() {
                 </div>}
 
               <div>
-                <label className="block text-sm mb-2 text-[#94A3B8]">Full Name</label>
+                <label className="block text-sm mb-2 text-white/70">Full Name</label>
                 <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94A3B8]" />
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/70" />
                   <input 
                     type="text" 
                     value={name} 
                     onChange={e => setName(e.target.value)} 
                     placeholder="John Doe" 
                     autoComplete="off"
-                    className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-[#2F6FED] transition-colors" 
+                    className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/10 rounded-xl focus:outline-none focus:border-white transition-colors" 
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm mb-2 text-[#94A3B8]">Email</label>
+                <label className="block text-sm mb-2 text-white/70">Email</label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94A3B8]" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/70" />
                   <input 
                     type="email" 
                     value={email} 
                     onChange={e => setEmail(e.target.value)} 
                     placeholder="your@email.com" 
                     autoComplete="off"
-                    className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-[#2F6FED] transition-colors" 
+                    className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/10 rounded-xl focus:outline-none focus:border-white transition-colors" 
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm mb-2 text-[#94A3B8]">Password</label>
+                <label className="block text-sm mb-2 text-white/70">Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94A3B8]" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/70" />
                   <input 
                     type="password" 
                     value={password} 
                     onChange={e => setPassword(e.target.value)} 
                     placeholder="••••••••" 
                     autoComplete="new-password"
-                    className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-[#2F6FED] transition-colors" 
+                    className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/10 rounded-xl focus:outline-none focus:border-white transition-colors" 
                   />
                 </div>
-                <p className="mt-2 text-xs text-[#94A3B8]">
+                <p className="mt-2 text-xs text-white/70">
                   Password must contain: 6+ characters, uppercase, lowercase, and number
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm mb-2 text-[#94A3B8]">Confirm Password</label>
+                <label className="block text-sm mb-2 text-white/70">Confirm Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94A3B8]" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/70" />
                   <input 
                     type="password" 
                     value={confirmPassword} 
                     onChange={e => setConfirmPassword(e.target.value)} 
                     placeholder="••••••••" 
                     autoComplete="new-password"
-                    className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-[#2F6FED] transition-colors" 
+                    className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/10 rounded-xl focus:outline-none focus:border-white transition-colors" 
                   />
                 </div>
               </div>
@@ -192,22 +192,22 @@ export default function SignupPage() {
               </button>
             </form>
 
-            <div className="mt-6 text-center text-sm text-[#94A3B8]">
+            <div className="mt-6 text-center text-sm text-white/70">
               Already have an account?{' '}
-              <Link to="/login" className="text-[#2F6FED] hover:text-[#A9C7FF] transition-colors">
+              <Link to="/login" className="text-white hover:text-white transition-colors">
                 Sign in
               </Link>
             </div>
           </div>
 
           {/* Terms */}
-          <p className="mt-6 text-xs text-[#94A3B8] text-center">
+          <p className="mt-6 text-xs text-white/70 text-center">
             By creating an account, you agree to our{' '}
-            <a href="#" className="text-[#2F6FED] hover:text-[#A9C7FF] transition-colors">
+            <a href="#" className="text-white hover:text-white transition-colors">
               Terms of Service
             </a>{' '}
             and{' '}
-            <a href="#" className="text-[#2F6FED] hover:text-[#A9C7FF] transition-colors">
+            <a href="#" className="text-white hover:text-white transition-colors">
               Privacy Policy
             </a>
           </p>

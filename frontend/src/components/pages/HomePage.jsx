@@ -125,8 +125,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Scroll Down Arrow */}
-      <div className="relative py-8 flex justify-center">
+      {/* Scroll Down Arrow - Higher on mobile */}
+      <div className="relative -mt-16 sm:-mt-8 py-8 flex justify-center">
         <motion.div
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}

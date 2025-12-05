@@ -205,14 +205,14 @@ export default function PricingPage() {
     return (
       <div className="min-h-screen py-20 px-4 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-[#2F6FED] animate-spin mx-auto mb-4" />
-          <p className="text-[#94A3B8]">Loading pricing plans...</p>
+          <Loader2 className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
+          <p className="text-white/70">Loading pricing plans...</p>
         </div>
       </div>
     );
   }
 
-  return <div className="min-h-screen py-20 px-4">
+  return <div className="min-h-screen py-20 px-4 bg-black">
       <div className="max-w-6xl mx-auto">
         <motion.div initial={{
         opacity: 0,
@@ -224,7 +224,7 @@ export default function PricingPage() {
         duration: 0.6
       }} className="text-center mb-16">
           <h1 className="mb-6">Unlock Your Full Potential</h1>
-          <p className="text-[#94A3B8] text-lg max-w-2xl mx-auto">
+          <p className="text-white/70 text-lg max-w-2xl mx-auto">
             Get unlimited access to all premium features and accelerate your mathematics journey
           </p>
         </motion.div>
@@ -240,27 +240,27 @@ export default function PricingPage() {
         }} transition={{
           duration: 0.6,
           delay: 0.1
-        }} className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
+        }} className="bg-black border-2 border-white/20 p-8">
             <h3 className="mb-2">Free</h3>
             <div className="mb-6">
               <span className="text-4xl">EGP 0</span>
-              <span className="text-[#94A3B8]">/month</span>
+              <span className="text-white/70">/month</span>
             </div>
             <ul className="space-y-3 mb-8">
               <li className="flex items-start text-sm">
-                <Check className="w-5 h-5 text-[#2F6FED] mr-2 flex-shrink-0 mt-0.5" />
-                <span className="text-[#94A3B8]">6 free questions per lesson</span>
+                <Check className="w-5 h-5 text-white mr-2 flex-shrink-0 mt-0.5" />
+                <span className="text-white/70">6 free questions per lesson</span>
               </li>
               <li className="flex items-start text-sm">
-                <Check className="w-5 h-5 text-[#2F6FED] mr-2 flex-shrink-0 mt-0.5" />
-                <span className="text-[#94A3B8]">Basic progress tracking</span>
+                <Check className="w-5 h-5 text-white mr-2 flex-shrink-0 mt-0.5" />
+                <span className="text-white/70">Basic progress tracking</span>
               </li>
               <li className="flex items-start text-sm">
-                <Check className="w-5 h-5 text-[#2F6FED] mr-2 flex-shrink-0 mt-0.5" />
-                <span className="text-[#94A3B8]">Community support</span>
+                <Check className="w-5 h-5 text-white mr-2 flex-shrink-0 mt-0.5" />
+                <span className="text-white/70">Community support</span>
               </li>
             </ul>
-            <button className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-[#94A3B8] cursor-not-allowed">
+            <button className="w-full py-3 bg-white/10 border border-white/10 rounded-xl text-white/70 cursor-not-allowed">
               Current Plan
             </button>
           </motion.div>
@@ -278,8 +278,8 @@ export default function PricingPage() {
                 transition={{ duration: 0.6, delay: 0.1 + (index * 0.1) }}
                 className={`relative ${
                   isPopular
-                    ? 'bg-gradient-to-br from-[#2F6FED]/20 to-[#F7C94C]/20 border-2 border-[#F7C94C] rounded-2xl p-8 lg:scale-105'
-                    : 'bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8'
+                    ? 'bg-gradient-to-br bg-black border-2 border-white rounded-2xl p-8 lg:scale-105'
+                    : 'bg-black border-2 border-white/20 p-8'
                 }`}
               >
                 {isPopular && (
@@ -302,14 +302,14 @@ export default function PricingPage() {
                 
                 <div className="mb-6">
                   <span className="text-4xl">{formatPrice(plan.price, plan.currency)}</span>
-                  <span className="text-[#94A3B8]">{getDurationText(plan.duration)}</span>
+                  <span className="text-white/70">{getDurationText(plan.duration)}</span>
                 </div>
                 
                 <ul className="space-y-3 mb-8">
                   {(plan.features || []).map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start text-sm">
-                      <Check className={`w-5 h-5 ${isPopular ? 'text-[#F7C94C]' : 'text-[#A9C7FF]'} mr-2 flex-shrink-0 mt-0.5`} />
-                      <span className={isPopular ? 'text-white' : 'text-[#94A3B8]'}>{feature}</span>
+                      <Check className={`w-5 h-5 ${isPopular ? 'text-[#F7C94C]' : 'text-white'} mr-2 flex-shrink-0 mt-0.5`} />
+                      <span className={isPopular ? 'text-white' : 'text-white/70'}>{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -361,20 +361,20 @@ export default function PricingPage() {
       }} transition={{
         duration: 0.6,
         delay: 0.4
-      }} className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8 text-center">
+      }} className="bg-black border-2 border-white/20 p-8 text-center">
           <h2 className="mb-6">Trusted by Thousands of Students</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <div className="text-4xl mb-2 text-[#2F6FED]">98%</div>
-              <div className="text-[#94A3B8]">Student Satisfaction</div>
+              <div className="text-4xl mb-2 text-white">98%</div>
+              <div className="text-white/70">Student Satisfaction</div>
             </div>
             <div>
-              <div className="text-4xl mb-2 text-[#A9C7FF]">50k+</div>
-              <div className="text-[#94A3B8]">Questions Solved</div>
+              <div className="text-4xl mb-2 text-white">50k+</div>
+              <div className="text-white/70">Questions Solved</div>
             </div>
             <div>
               <div className="text-4xl mb-2 text-[#F7C94C]">A*</div>
-              <div className="text-[#94A3B8]">Average Grade</div>
+              <div className="text-white/70">Average Grade</div>
             </div>
           </div>
         </motion.div>
@@ -404,9 +404,9 @@ export default function PricingPage() {
           }, {
             q: 'Is there a student discount?',
             a: 'Yes! Contact our support team with your student ID for a special discount code.'
-          }].map((faq, index) => <div key={index} className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-6">
-                <h3 className="mb-3 text-[#A9C7FF]">{faq.q}</h3>
-                <p className="text-[#94A3B8] text-sm">{faq.a}</p>
+          }].map((faq, index) => <div key={index} className="bg-black border-2 border-white/20 p-6">
+                <h3 className="mb-3 text-white">{faq.q}</h3>
+                <p className="text-white/70 text-sm">{faq.a}</p>
               </div>)}
           </div>
         </motion.div>
