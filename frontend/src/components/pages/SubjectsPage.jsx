@@ -1,19 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { GraduationCap, Loader2, AlertCircle } from 'lucide-react';
+import { GraduationCap, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
 import { getSubjects } from '../../services/publicService';
 
 export default function SubjectsPage() {
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const gradientMap = {
-    'as-level': 'from-[#2F6FED] to-[#A9C7FF]',
-    'a2-level': 'from-[#A9C7FF] to-[#2F6FED]',
-    'igcse': 'from-[#F7C94C] to-[#2F6FED]'
-  };
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -32,8 +26,7 @@ export default function SubjectsPage() {
               name: subject.name,
               description: subject.description || '',
               level: subject.level,
-              slug: subject.slug,
-              gradient: gradientMap[subject.slug] || gradientMap[subject.level?.toLowerCase()] || 'from-[#2F6FED] to-[#A9C7FF]'
+              slug: subject.slug
             };
           });
           setSubjects(transformedSubjects);
@@ -54,10 +47,10 @@ export default function SubjectsPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen py-20 px-4 flex items-center justify-center">
+      <div className="min-h-screen py-20 px-4 flex items-center justify-center bg-black">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-[#2F6FED] animate-spin mx-auto mb-4" />
-          <p className="text-[#94A3B8]">Loading subjects...</p>
+          <Loader2 className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
+          <p className="text-white/60 text-[16px]">Loading subjects...</p>
         </div>
       </div>
     );
@@ -66,14 +59,14 @@ export default function SubjectsPage() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen py-20 px-4 flex items-center justify-center">
+      <div className="min-h-screen py-20 px-4 flex items-center justify-center bg-black">
         <div className="text-center max-w-md">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Error Loading Subjects</h2>
-          <p className="text-[#94A3B8] mb-4">{error}</p>
+          <h2 className="text-[24px] font-bold mb-2 text-white">Error Loading Subjects</h2>
+          <p className="text-white/60 mb-4 text-[16px]">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-3 bg-[#2F6FED] hover:bg-[#2F6FED]/80 rounded-xl transition-colors"
+            className="px-6 py-3 bg-white text-black font-bold hover:bg-white/90 transition-colors text-[16px]"
           >
             Retry
           </button>
@@ -85,27 +78,31 @@ export default function SubjectsPage() {
   // Empty state
   if (subjects.length === 0) {
     return (
-      <div className="min-h-screen py-20 px-4 flex items-center justify-center">
+      <div className="min-h-screen py-20 px-4 flex items-center justify-center bg-black">
         <div className="text-center">
-          <p className="text-[#94A3B8] text-lg">No subjects available at the moment.</p>
+          <p className="text-white/60 text-[18px]">No subjects available at the moment.</p>
         </div>
       </div>
     );
   }
-  return <div className="min-h-screen py-20 px-4">
+
+  return (
+    <div className="min-h-screen py-20 px-4 bg-black">
       <div className="max-w-6xl mx-auto">
-        <motion.div initial={{
-        opacity: 0,
-        y: 30
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        duration: 0.6
-      }} className="text-center mb-16">
-          <h1 className="mb-6">Choose Your Subject</h1>
-          <p className="text-[#94A3B8] text-lg max-w-2xl mx-auto">
-            Select the course you're studying to access comprehensive notes, practice questions, and expert guidance
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <h1 className="text-white text-[40px] sm:text-[56px] md:text-[64px] font-bold mb-6">
+            Choose Your Subject
+          </h1>
+          <p className="text-white/70 text-[16px] sm:text-[18px] max-w-2xl mx-auto leading-relaxed">
+            Edexcel A-Level & O-Level Mathematics
+          </p>
+          <p className="text-white/50 text-[14px] sm:text-[16px] max-w-2xl mx-auto mt-4">
+            INFINITE AI-generated questions on every lesson • Trained on 10,000+ handmade questions
           </p>
         </motion.div>
 
@@ -113,53 +110,66 @@ export default function SubjectsPage() {
           {subjects.map((subject, index) => {
             // Use subject ID (slug or _id) for navigation
             const subjectId = subject.slug || subject._id || subject.id;
-            // For now, always link to sections page (sections will be fetched dynamically)
             const linkTo = `/subjects/${subjectId}`;
-            const linkText = 'View Sections';
-            
-            return <motion.div key={subject.id} initial={{
-          opacity: 0,
-          y: 30
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          duration: 0.6,
-          delay: index * 0.1
-        }} whileHover={{
-          y: -12,
-          scale: 1.02
-        }}>
-              <Link to={linkTo} className="block group">
-                <div className="relative bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-3xl p-8 h-full hover:border-white/30 transition-all duration-300 hover:shadow-2xl overflow-hidden">
-                  {/* Gradient overlay on hover */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${subject.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-                  
-                  <div className="relative">
-                    <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${subject.gradient} flex items-center justify-center mb-6`}>
-                      <GraduationCap className="w-10 h-10 text-white" />
+
+            return (
+              <motion.div
+                key={subject.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <Link to={linkTo} className="block group h-full">
+                  <div className="relative bg-black border-2 border-white/20 p-8 h-full hover:border-white transition-all duration-300">
+                    <div className="w-16 h-16 border-2 border-white/30 flex items-center justify-center mb-6 group-hover:border-white transition-all duration-300">
+                      <GraduationCap className="w-8 h-8 text-white" />
                     </div>
-                    
-                    <h2 className="mb-4 group-hover:text-[#A9C7FF] transition-colors duration-300">
+
+                    <h2 className="text-white text-[24px] sm:text-[28px] font-bold mb-4 group-hover:text-white/80 transition-colors duration-300">
                       {subject.name}
                     </h2>
-                    
-                    <p className="text-[#94A3B8]">
+
+                    <p className="text-white/60 text-[14px] sm:text-[16px] mb-6 leading-relaxed">
                       {subject.description}
                     </p>
 
-                    <div className="mt-6 flex items-center text-[#2F6FED] group-hover:text-[#A9C7FF] transition-colors duration-300">
-                      <span className="text-sm">{linkText}</span>
-                      <svg className="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+                    <div className="flex items-center text-white text-[14px] font-bold uppercase tracking-wider group-hover:translate-x-2 transition-transform duration-300">
+                      <span>View Sections</span>
+                      <ArrowRight className="w-4 h-4 ml-2" />
                     </div>
                   </div>
-                </div>
-              </Link>
-            </motion.div>;
+                </Link>
+              </motion.div>
+            );
           })}
         </div>
+
+        {/* Info Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mt-16 border-2 border-white/20 p-8 text-center"
+        >
+          <h3 className="text-white text-[20px] sm:text-[24px] font-bold mb-4">
+            Why Choose StudySouq?
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            <div>
+              <p className="text-white text-[32px] font-bold mb-2">∞</p>
+              <p className="text-white/70 text-[14px]">Infinite questions per lesson</p>
+            </div>
+            <div>
+              <p className="text-white text-[32px] font-bold mb-2">10,000+</p>
+              <p className="text-white/70 text-[14px]">Handmade training questions</p>
+            </div>
+            <div>
+              <p className="text-white text-[32px] font-bold mb-2">24/7</p>
+              <p className="text-white/70 text-[14px]">AI tutor availability</p>
+            </div>
+          </div>
+        </motion.div>
       </div>
-    </div>;
+    </div>
+  );
 }

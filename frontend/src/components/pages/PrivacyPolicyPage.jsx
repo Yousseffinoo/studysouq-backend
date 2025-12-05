@@ -3,7 +3,7 @@ import { Shield } from 'lucide-react';
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen py-20 px-4">
+    <div className="min-h-screen py-20 px-4 bg-black">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -11,28 +11,28 @@ export default function PrivacyPolicyPage() {
           transition={{ duration: 0.6 }}
         >
           {/* Header */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#2F6FED]/20 to-[#A9C7FF]/20 rounded-2xl mb-6">
-              <Shield className="w-10 h-10 text-[#2F6FED]" />
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center justify-center w-20 h-20 border-2 border-white/20 mb-6">
+              <Shield className="w-10 h-10 text-white" />
             </div>
-            <h1 className="mb-4">Privacy Policy</h1>
-            <p className="text-[#94A3B8]">Last Updated: January 2025</p>
+            <h1 className="text-white text-[40px] sm:text-[48px] font-bold mb-4">Privacy Policy</h1>
+            <p className="text-white/60 text-[16px]">Last Updated: January 2025</p>
           </div>
 
           {/* Content */}
-          <div className="max-w-4xl mx-auto p-6 space-y-4">
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">At StudySouq, we respect your privacy and are committed to protecting your personal information.</h2>
-              <p className="text-[#94A3B8] leading-relaxed">
+          <div className="max-w-4xl mx-auto space-y-8">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">At StudySouq, we respect your privacy and are committed to protecting your personal information.</h2>
+              <p className="text-white/70 leading-relaxed text-[16px]">
                 This Privacy Policy explains how we collect, use, store, and protect your data when you use our platform.
               </p>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">1. INFORMATION WE COLLECT</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">1. INFORMATION WE COLLECT</h2>
+              <div className="space-y-4 text-white/70 text-[16px]">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">1.1 Account Information:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">1.1 Account Information:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Full name</li>
                     <li>Email address</li>
@@ -43,7 +43,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">1.2 Payment Information:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">1.2 Payment Information:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Payment transactions processed through Paymob (PCI-DSS compliant)</li>
                     <li>We do NOT store credit card numbers</li>
@@ -52,7 +52,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">1.3 Usage Information:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">1.3 Usage Information:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Questions attempted and answers submitted</li>
                     <li>Topics studied and time spent</li>
@@ -65,7 +65,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">1.4 Communications:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">1.4 Communications:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Support tickets and correspondence</li>
                     <li>Feedback and survey responses</li>
@@ -75,11 +75,11 @@ export default function PrivacyPolicyPage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">2. HOW WE USE YOUR INFORMATION</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">2. HOW WE USE YOUR INFORMATION</h2>
+              <div className="space-y-4 text-white/70 text-[16px]">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">2.1 To Provide Our Service:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">2.1 To Provide Our Service:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Create and manage your account</li>
                     <li>Process subscription payments</li>
@@ -91,7 +91,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">2.2 To Improve Our Service:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">2.2 To Improve Our Service:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Analyze usage patterns to enhance features</li>
                     <li>Identify and fix technical issues</li>
@@ -101,7 +101,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">2.3 To Communicate With You:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">2.3 To Communicate With You:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Send important account notifications</li>
                     <li>Provide customer support</li>
@@ -111,7 +111,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">2.4 To Ensure Security:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">2.4 To Ensure Security:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Prevent fraud and abuse</li>
                     <li>Protect against security threats</li>
@@ -122,10 +122,10 @@ export default function PrivacyPolicyPage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">3. LEGAL BASIS FOR PROCESSING (GDPR Compliance)</h2>
-              <p className="text-[#94A3B8] leading-relaxed mb-4">We process your data based on:</p>
-              <ul className="list-disc list-inside space-y-2 ml-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">3. LEGAL BASIS FOR PROCESSING (GDPR Compliance)</h2>
+              <p className="text-white/70 leading-relaxed mb-4 text-[16px]">We process your data based on:</p>
+              <ul className="list-disc list-inside space-y-2 ml-4 text-white/70 text-[16px]">
                 <li>Contract Performance: To provide the service you subscribed to</li>
                 <li>Legitimate Interest: To improve our service and prevent fraud</li>
                 <li>Consent: For marketing communications (you can withdraw anytime)</li>
@@ -133,11 +133,11 @@ export default function PrivacyPolicyPage() {
               </ul>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">4. HOW WE SHARE YOUR INFORMATION</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">4. HOW WE SHARE YOUR INFORMATION</h2>
+              <div className="space-y-4 text-white/70 text-[16px]">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">4.1 We DO Share With:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">4.1 We DO Share With:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Paymob: For payment processing (they have their own privacy policy)</li>
                     <li>Anthropic (Claude AI): For AI tutor functionality (anonymized when possible)</li>
@@ -147,7 +147,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">4.2 We DO NOT:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">4.2 We DO NOT:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Sell your personal information to third parties</li>
                     <li>Share your data with advertisers</li>
@@ -156,7 +156,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">4.3 Legal Requirements:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">4.3 Legal Requirements:</h3>
                   <p className="mb-2">We may disclose information if required by:</p>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Egyptian law or legal process</li>
@@ -168,11 +168,11 @@ export default function PrivacyPolicyPage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">5. DATA STORAGE AND SECURITY</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">5. DATA STORAGE AND SECURITY</h2>
+              <div className="space-y-4 text-white/70 text-[16px]">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">5.1 Where We Store Data:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">5.1 Where We Store Data:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Servers located in secure data centers (EU/US)</li>
                     <li>Database backups stored encrypted</li>
@@ -180,7 +180,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">5.2 Security Measures:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">5.2 Security Measures:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Encryption in transit (SSL/TLS)</li>
                     <li>Encryption at rest for sensitive data</li>
@@ -191,7 +191,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">5.3 Data Retention:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">5.3 Data Retention:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Active accounts: Data retained while subscription active</li>
                     <li>Canceled accounts: Data retained for 90 days, then deleted</li>
@@ -202,12 +202,12 @@ export default function PrivacyPolicyPage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">6. YOUR RIGHTS</h2>
-              <p className="text-[#94A3B8] leading-relaxed mb-4">Under Egyptian Data Protection Law and GDPR (for EU users), you have the right to:</p>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">6. YOUR RIGHTS</h2>
+              <p className="text-white/70 leading-relaxed mb-4 text-[16px]">Under Egyptian Data Protection Law and GDPR (for EU users), you have the right to:</p>
+              <div className="space-y-4 text-white/70 text-[16px]">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">6.1 Access:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">6.1 Access:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Request a copy of your personal data</li>
                     <li>Receive data in readable format</li>
@@ -215,7 +215,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">6.2 Correction:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">6.2 Correction:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Update incorrect information</li>
                     <li>Complete incomplete data</li>
@@ -223,7 +223,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">6.3 Deletion ("Right to be Forgotten"):</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">6.3 Deletion ("Right to be Forgotten"):</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Request account and data deletion</li>
                     <li>We will delete within 30 days</li>
@@ -231,21 +231,21 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">6.4 Portability:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">6.4 Portability:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Receive your data in machine-readable format</li>
                     <li>Transfer to another service</li>
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">6.5 Object:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">6.5 Object:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Object to processing for marketing purposes</li>
                     <li>Withdraw consent at any time</li>
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">6.6 Restriction:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">6.6 Restriction:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Request we stop processing certain data</li>
                     <li>Temporary restriction while disputes resolved</li>
@@ -255,11 +255,11 @@ export default function PrivacyPolicyPage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">7. CHILDREN'S PRIVACY</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">7. CHILDREN'S PRIVACY</h2>
+              <div className="space-y-4 text-white/70 text-[16px]">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">7.1 Age Requirements:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">7.1 Age Requirements:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Minimum age: 13 years old</li>
                     <li>Users 13-17 require parental consent</li>
@@ -267,7 +267,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">7.2 Parental Controls:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">7.2 Parental Controls:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Parents can request access to child's account</li>
                     <li>Parents can request data deletion</li>
@@ -275,7 +275,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">7.3 Protection Measures:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">7.3 Protection Measures:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>No targeted advertising to children</li>
                     <li>Extra security for minor accounts</li>
@@ -285,11 +285,11 @@ export default function PrivacyPolicyPage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">8. COOKIES AND TRACKING</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">8. COOKIES AND TRACKING</h2>
+              <div className="space-y-4 text-white/70 text-[16px]">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">8.1 What We Use:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">8.1 What We Use:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Essential Cookies: Required for platform to function (login, session)</li>
                     <li>Analytics Cookies: To understand usage patterns (anonymized)</li>
@@ -297,14 +297,14 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">8.2 Third-Party Cookies:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">8.2 Third-Party Cookies:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Payment provider (Paymob)</li>
                     <li>Analytics tools (if used)</li>
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">8.3 Your Choices:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">8.3 Your Choices:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Disable non-essential cookies in browser settings</li>
                     <li>Essential cookies cannot be disabled (platform won't work)</li>
@@ -314,17 +314,17 @@ export default function PrivacyPolicyPage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">9. THIRD-PARTY LINKS</h2>
-              <p className="text-[#94A3B8] leading-relaxed">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">9. THIRD-PARTY LINKS</h2>
+              <p className="text-white/70 leading-relaxed text-[16px]">
                 Our platform may contain links to external websites (e.g., Edexcel official resources). We are not responsible for the privacy practices of these sites. We encourage you to read their privacy policies.
               </p>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">10. INTERNATIONAL DATA TRANSFERS</h2>
-              <p className="text-[#94A3B8] leading-relaxed mb-4">If you access StudySouq from outside Egypt:</p>
-              <ul className="list-disc list-inside space-y-2 ml-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">10. INTERNATIONAL DATA TRANSFERS</h2>
+              <p className="text-white/70 leading-relaxed mb-4 text-[16px]">If you access StudySouq from outside Egypt:</p>
+              <ul className="list-disc list-inside space-y-2 ml-4 text-white/70 text-[16px]">
                 <li>Your data may be transferred to Egypt for processing</li>
                 <li>We ensure adequate protection measures</li>
                 <li>EU users: We comply with GDPR requirements</li>
@@ -332,11 +332,11 @@ export default function PrivacyPolicyPage() {
               </ul>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">11. MARKETING COMMUNICATIONS</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">11. MARKETING COMMUNICATIONS</h2>
+              <div className="space-y-4 text-white/70 text-[16px]">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">11.1 What We Send:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">11.1 What We Send:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Study tips and educational content</li>
                     <li>New feature announcements</li>
@@ -345,7 +345,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">11.2 Opt-Out:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">11.2 Opt-Out:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Unsubscribe link in every email</li>
                     <li>Update preferences in account settings</li>
@@ -353,7 +353,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">11.3 Transactional Emails:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">11.3 Transactional Emails:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Cannot opt-out of essential emails (payment confirmations, password resets, etc.)</li>
                   </ul>
@@ -361,10 +361,10 @@ export default function PrivacyPolicyPage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">12. DATA BREACH NOTIFICATION</h2>
-              <p className="text-[#94A3B8] leading-relaxed mb-4">In the unlikely event of a data breach:</p>
-              <ul className="list-disc list-inside space-y-2 ml-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">12. DATA BREACH NOTIFICATION</h2>
+              <p className="text-white/70 leading-relaxed mb-4 text-[16px]">In the unlikely event of a data breach:</p>
+              <ul className="list-disc list-inside space-y-2 ml-4 text-white/70 text-[16px]">
                 <li>We will notify affected users within 72 hours</li>
                 <li>Notification via email to registered address</li>
                 <li>Describe nature of breach and mitigation steps</li>
@@ -372,11 +372,11 @@ export default function PrivacyPolicyPage() {
               </ul>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">13. CHANGES TO THIS PRIVACY POLICY</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">13. CHANGES TO THIS PRIVACY POLICY</h2>
+              <div className="space-y-4 text-white/70 text-[16px]">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">13.1 Updates:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">13.1 Updates:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>We may update this policy to reflect changes in practices or law</li>
                     <li>Material changes will be notified via email and platform notice</li>
@@ -384,7 +384,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-2">13.2 Your Acceptance:</h3>
+                  <h3 className="text-[18px] font-bold text-white mb-2">13.2 Your Acceptance:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
                     <li>Continued use after changes constitutes acceptance</li>
                     <li>Review policy regularly for updates</li>
@@ -394,16 +394,16 @@ export default function PrivacyPolicyPage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">14. CONTACT US</h2>
-              <p className="text-[#94A3B8] leading-relaxed mb-4">For privacy questions, concerns, or to exercise your rights:</p>
-              <ul className="list-disc list-inside space-y-2 ml-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">14. CONTACT US</h2>
+              <p className="text-white/70 leading-relaxed mb-4 text-[16px]">For privacy questions, concerns, or to exercise your rights:</p>
+              <ul className="list-disc list-inside space-y-2 ml-4 text-white/70 text-[16px]">
                 <li>Email: studysouq@gmail.com</li>
                 <li>Support: studysouq@gmail.com</li>
                 <li>Response time: Within 72 hours</li>
               </ul>
-              <p className="text-[#94A3B8] leading-relaxed mt-4 mb-2">For complaints:</p>
-              <ul className="list-disc list-inside space-y-2 ml-4 text-[#94A3B8]">
+              <p className="text-white/70 leading-relaxed mt-4 mb-2 text-[16px]">For complaints:</p>
+              <ul className="list-disc list-inside space-y-2 ml-4 text-white/70 text-[16px]">
                 <li>First contact us directly</li>
                 <li>If unsatisfied, you may complain to Egyptian Data Protection Authority</li>
                 <li>EU users: Contact your local data protection authority</li>
@@ -411,20 +411,15 @@ export default function PrivacyPolicyPage() {
             </section>
 
             {/* Contact Us */}
-            <section className="bg-gradient-to-br from-[#2F6FED]/10 to-[#A9C7FF]/10 border border-[#2F6FED]/30 rounded-2xl p-8 text-center">
-              <h2 className="text-2xl font-semibold mb-4">Questions About Privacy?</h2>
-              <p className="text-[#94A3B8] mb-6">
+            <section className="bg-black border-2 border-white p-8 text-center">
+              <h2 className="text-[24px] font-bold mb-4 text-white">Questions About Privacy?</h2>
+              <p className="text-white/70 mb-6 text-[16px]">
                 Last Updated: January 2025<br />
                 StudySouq - We respect your privacy
               </p>
               <a
                 href="mailto:studysouq@gmail.com"
-                className="inline-block px-8 py-3 bg-[#2F6FED] hover:bg-[#2F6FED]/80 transition-all duration-300"
-                style={{
-                  borderRadius: '9999px',
-                  fontWeight: '600',
-                  boxShadow: '0 10px 30px rgba(47, 111, 237, 0.5)'
-                }}
+                className="inline-block px-8 py-4 bg-white text-black font-bold hover:bg-white/90 transition-all duration-300 text-[16px]"
               >
                 Contact Privacy Team
               </a>

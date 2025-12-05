@@ -126,12 +126,7 @@ function AppShell() {
 
   // Regular routes with Navbar and Footer
   return (
-    <div
-      className="min-h-screen text-white flex flex-col"
-      style={{
-        background: "linear-gradient(180deg, #020914 0%, #0B1A2C 45%, #020914 100%)",
-      }}
-    >
+  <div style={{ minHeight: "100vh", background: "#000000", color: "white" }}>
       <Navbar />
       <AnimatePresence mode="wait" initial={false}>
         <motion.main

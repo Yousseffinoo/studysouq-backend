@@ -1,54 +1,66 @@
+import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { FileText } from 'lucide-react';
+import { FileText, ArrowLeft } from 'lucide-react';
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen py-20 px-4">
+    <div className="min-h-screen py-20 px-4 bg-black">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
+          {/* Back to Home Button */}
+          <div className="mb-8">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-white hover:text-white/70 transition-colors text-[14px] font-bold uppercase tracking-wider"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Home
+            </Link>
+          </div>
+
           {/* Header */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#2F6FED]/20 to-[#A9C7FF]/20 rounded-2xl mb-6">
-              <FileText className="w-10 h-10 text-[#2F6FED]" />
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center justify-center w-20 h-20 border-2 border-white/20 mb-6">
+              <FileText className="w-10 h-10 text-white" />
             </div>
-            <h1 className="mb-4">Terms and Conditions</h1>
-            <p className="text-[#94A3B8]">Last Updated: January 2025</p>
+            <h1 className="text-white text-[40px] sm:text-[48px] font-bold mb-4">Terms and Conditions</h1>
+            <p className="text-white/60 text-[16px]">Last Updated: January 2025</p>
           </div>
 
           {/* Content */}
           <div className="max-w-4xl mx-auto p-6 space-y-4">
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">Welcome to StudySouq!</h2>
-              <p className="text-[#94A3B8] leading-relaxed mb-4">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">Welcome to StudySouq!</h2>
+              <p className="text-white/70 leading-relaxed mb-4">
                 These Terms and Conditions ("Terms") govern your use of the StudySouq platform located at studysouq.com ("Website", "Service", "Platform"). By accessing or using StudySouq, you agree to be bound by these Terms.
               </p>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">1. ABOUT STUDYSOUQ</h2>
-              <p className="text-[#94A3B8] leading-relaxed mb-4">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">1. ABOUT STUDYSOUQ</h2>
+              <p className="text-white/70 leading-relaxed mb-4">
                 StudySouq is an online educational platform providing adaptive learning resources and AI-powered tutoring for IGCSE, AS Level, and A2 Level Edexcel Mathematics students in Egypt. We offer study materials, practice questions, progress tracking, and personalized learning recommendations.
               </p>
-              <p className="text-[#94A3B8] leading-relaxed mb-2">Business Name: StudySouq</p>
-              <p className="text-[#94A3B8] leading-relaxed mb-2">Service Type: Online Educational Platform</p>
-              <p className="text-[#94A3B8] leading-relaxed mb-2">Location: Cairo, Egypt</p>
-              <p className="text-[#94A3B8] leading-relaxed">Contact: studysouq@gmail.com</p>
+              <p className="text-white/70 leading-relaxed mb-2">Business Name: StudySouq</p>
+              <p className="text-white/70 leading-relaxed mb-2">Service Type: Online Educational Platform</p>
+              <p className="text-white/70 leading-relaxed mb-2">Location: Cairo, Egypt</p>
+              <p className="text-white/70 leading-relaxed">Contact: studysouq@gmail.com</p>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">2. ACCEPTANCE OF TERMS</h2>
-              <p className="text-[#94A3B8] leading-relaxed">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">2. ACCEPTANCE OF TERMS</h2>
+              <p className="text-white/70 leading-relaxed">
                 By creating an account, accessing our content, or using our services, you acknowledge that you have read, understood, and agree to be bound by these Terms and our Privacy Policy. If you do not agree, please discontinue use immediately.
               </p>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">3. ELIGIBILITY</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">3. ELIGIBILITY</h2>
+              <div className="space-y-4 text-white/70">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">3.1 Age Requirements:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
@@ -69,9 +81,9 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">4. SUBSCRIPTION PLANS AND PRICING</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">4. SUBSCRIPTION PLANS AND PRICING</h2>
+              <div className="space-y-4 text-white/70">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">4.1 Available Plans:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
@@ -102,9 +114,9 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">5. FREE QUESTIONS</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">5. FREE QUESTIONS</h2>
+              <div className="space-y-4 text-white/70">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">5.1 Free Access Terms:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
@@ -126,9 +138,9 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">6. CANCELLATION AND REFUNDS</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">6. CANCELLATION AND REFUNDS</h2>
+              <div className="space-y-4 text-white/70">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">6.1 Cancellation:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
@@ -159,9 +171,9 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">7. USER RESPONSIBILITIES</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">7. USER RESPONSIBILITIES</h2>
+              <div className="space-y-4 text-white/70">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">You agree to:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
@@ -189,9 +201,9 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">8. INTELLECTUAL PROPERTY</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">8. INTELLECTUAL PROPERTY</h2>
+              <div className="space-y-4 text-white/70">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">8.1 Our Content:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
@@ -219,9 +231,9 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">9. AI TUTOR DISCLAIMER</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">9. AI TUTOR DISCLAIMER</h2>
+              <div className="space-y-4 text-white/70">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">9.1 Educational Tool:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
@@ -243,9 +255,9 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">10. CONTENT ACCURACY</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">10. CONTENT ACCURACY</h2>
+              <div className="space-y-4 text-white/70">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">10.1 Educational Standards:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
@@ -266,14 +278,14 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">11. PRIVACY AND DATA PROTECTION</h2>
-              <p className="text-[#94A3B8] leading-relaxed mb-4">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">11. PRIVACY AND DATA PROTECTION</h2>
+              <p className="text-white/70 leading-relaxed mb-4">
                 Your privacy is important to us. Our collection, use, and protection of your personal information is governed by our Privacy Policy, which is incorporated into these Terms by reference. By using StudySouq, you consent to our data practices as described in the Privacy Policy.
               </p>
               <div>
                 <h3 className="text-lg font-semibold text-white mb-2">Key Points:</h3>
-                <ul className="list-disc list-inside space-y-2 ml-4 text-[#94A3B8]">
+                <ul className="list-disc list-inside space-y-2 ml-4 text-white/70">
                   <li>We collect information necessary to provide our service</li>
                   <li>We protect your data with industry-standard security measures</li>
                   <li>We do not sell your personal information to third parties</li>
@@ -282,9 +294,9 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">12. SERVICE AVAILABILITY</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">12. SERVICE AVAILABILITY</h2>
+              <div className="space-y-4 text-white/70">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">12.1 Uptime:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
@@ -313,9 +325,9 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">13. LIMITATION OF LIABILITY</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">13. LIMITATION OF LIABILITY</h2>
+              <div className="space-y-4 text-white/70">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">13.1 No Warranties:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
@@ -342,12 +354,12 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">14. INDEMNIFICATION</h2>
-              <p className="text-[#94A3B8] leading-relaxed mb-2">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">14. INDEMNIFICATION</h2>
+              <p className="text-white/70 leading-relaxed mb-2">
                 You agree to indemnify and hold harmless StudySouq, its owners, employees, and partners from any claims, damages, losses, or expenses (including legal fees) arising from:
               </p>
-              <ul className="list-disc list-inside space-y-2 ml-4 text-[#94A3B8]">
+              <ul className="list-disc list-inside space-y-2 ml-4 text-white/70">
                 <li>Your violation of these Terms</li>
                 <li>Your misuse of the platform</li>
                 <li>Your violation of any rights of another party</li>
@@ -355,9 +367,9 @@ export default function TermsOfServicePage() {
               </ul>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">15. ACCOUNT TERMINATION</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">15. ACCOUNT TERMINATION</h2>
+              <div className="space-y-4 text-white/70">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">15.1 Termination by You:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
@@ -389,9 +401,9 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">16. DISPUTE RESOLUTION</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">16. DISPUTE RESOLUTION</h2>
+              <div className="space-y-4 text-white/70">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">16.1 Governing Law:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
@@ -418,9 +430,9 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">17. MODIFICATIONS TO TERMS</h2>
-              <div className="space-y-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">17. MODIFICATIONS TO TERMS</h2>
+              <div className="space-y-4 text-white/70">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-2">17.1 Changes:</h3>
                   <ul className="list-disc list-inside space-y-2 ml-4">
@@ -440,47 +452,47 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">18. CONTACT INFORMATION</h2>
-              <p className="text-[#94A3B8] leading-relaxed mb-4">For questions, concerns, or support:</p>
-              <ul className="list-disc list-inside space-y-2 ml-4 text-[#94A3B8]">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">18. CONTACT INFORMATION</h2>
+              <p className="text-white/70 leading-relaxed mb-4">For questions, concerns, or support:</p>
+              <ul className="list-disc list-inside space-y-2 ml-4 text-white/70">
                 <li>Email: studysouq@gmail.com</li>
                 <li>Website: www.studysouq.com</li>
                 <li>Response time: Within 48 hours</li>
               </ul>
-              <p className="text-[#94A3B8] leading-relaxed mt-4 mb-2">For legal notices:</p>
-              <ul className="list-disc list-inside space-y-2 ml-4 text-[#94A3B8]">
+              <p className="text-white/70 leading-relaxed mt-4 mb-2">For legal notices:</p>
+              <ul className="list-disc list-inside space-y-2 ml-4 text-white/70">
                 <li>Email: studysouq@gmail.com</li>
               </ul>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">19. SEVERABILITY</h2>
-              <p className="text-[#94A3B8] leading-relaxed">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">19. SEVERABILITY</h2>
+              <p className="text-white/70 leading-relaxed">
                 If any provision of these Terms is found to be unenforceable or invalid, that provision will be limited or eliminated to the minimum extent necessary, and the remaining provisions will remain in full force and effect.
               </p>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">20. ENTIRE AGREEMENT</h2>
-              <p className="text-[#94A3B8] leading-relaxed">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-2xl font-semibold mb-4 text-white">20. ENTIRE AGREEMENT</h2>
+              <p className="text-white/70 leading-relaxed">
                 These Terms, together with our Privacy Policy and Refund Policy, constitute the entire agreement between you and StudySouq regarding use of our service, superseding any prior agreements.
               </p>
             </section>
 
             {/* Contact */}
-            <section className="bg-gradient-to-br from-[#2F6FED]/10 to-[#A9C7FF]/10 border border-[#2F6FED]/30 rounded-2xl p-8 text-center">
+            <section className="bg-black border-2 border-white p-8 text-center">
               <h2 className="text-2xl font-semibold mb-4">Questions About These Terms?</h2>
-              <p className="text-[#94A3B8] mb-6">
+              <p className="text-white/70 mb-6">
                 By using StudySouq, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.
               </p>
-              <p className="text-[#94A3B8] mb-6">
+              <p className="text-white/70 mb-6">
                 Last Updated: January 2025<br />
                 StudySouq - Your Personal AI Mathematics Tutor
               </p>
               <a
                 href="mailto:studysouq@gmail.com"
-                className="inline-block px-8 py-3 bg-[#2F6FED] hover:bg-[#2F6FED]/80 transition-all duration-300"
+                className="inline-block px-8 py-3 bg-white text-black font-bold hover:bg-white/90 transition-all duration-300"
                 style={{
                   borderRadius: '9999px',
                   fontWeight: '600',

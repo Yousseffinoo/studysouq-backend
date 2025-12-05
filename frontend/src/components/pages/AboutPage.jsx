@@ -1,133 +1,140 @@
+import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { BookOpen, Target, Award, Users } from 'lucide-react';
+import { BookOpen, Target, Award, Users, ArrowLeft } from 'lucide-react';
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen py-20 px-4">
+    <div className="min-h-screen py-20 px-4 bg-black">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
+          {/* Back to Home Button */}
+          <div className="mb-8">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-white hover:text-white/70 transition-colors text-[14px] font-bold uppercase tracking-wider"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Home
+            </Link>
+          </div>
+
           {/* Header */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#2F6FED]/20 to-[#A9C7FF]/20 rounded-2xl mb-6">
-              <BookOpen className="w-10 h-10 text-[#2F6FED]" />
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center justify-center w-20 h-20 border-2 border-white/20 mb-6">
+              <BookOpen className="w-10 h-10 text-white" />
             </div>
-            <h1 className="mb-4">About StudySouq</h1>
-            <p className="text-[#94A3B8]">Your Personal AI Mathematics Tutor</p>
+            <h1 className="text-white text-[40px] sm:text-[48px] font-bold mb-4">About StudySouq</h1>
+            <p className="text-white/60 text-[16px]">Your Personal AI Mathematics Tutor</p>
           </div>
 
           {/* Content */}
-          <div className="max-w-4xl mx-auto p-6 space-y-4">
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">Who We Are</h2>
-              <p className="text-[#94A3B8] leading-relaxed mb-4">
-                StudySouq is an AI-powered educational platform designed for IGCSE, AS Level, and A2 Edexcel Mathematics students in Egypt.
+          <div className="max-w-4xl mx-auto space-y-8">
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">Who We Are</h2>
+              <p className="text-white/70 leading-relaxed mb-4 text-[16px]">
+                StudySouq is an AI-powered educational platform designed for A-Level and O-Level Edexcel Mathematics students.
               </p>
-              <p className="text-[#94A3B8] leading-relaxed">
-                Our mission is to provide personalized, adaptive learning that helps every student understand concepts faster, improve through practice, and perform confidently in exams.
+              <p className="text-white/70 leading-relaxed text-[16px]">
+                Our mission is to provide personalized, adaptive learning with INFINITE AI-generated questions trained on 10,000+ handmade problems.
               </p>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">What We Offer</h2>
-              <p className="text-[#94A3B8] leading-relaxed mb-4">Our platform combines:</p>
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">What We Offer</h2>
+              <p className="text-white/70 leading-relaxed mb-4 text-[16px]">Our platform combines:</p>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <span className="text-[#2F6FED] mt-1">•</span>
-                  <span className="text-[#94A3B8]">High-quality study materials</span>
+                  <span className="text-white mt-1 text-[18px]">•</span>
+                  <span className="text-white/70 text-[16px]">INFINITE AI-generated questions per lesson</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-[#2F6FED] mt-1">•</span>
-                  <span className="text-[#94A3B8]">AI-assisted tutoring</span>
+                  <span className="text-white mt-1 text-[18px]">•</span>
+                  <span className="text-white/70 text-[16px]">AI tutor trained on 10,000+ handmade questions</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-[#2F6FED] mt-1">•</span>
-                  <span className="text-[#94A3B8]">Topic-based practice questions</span>
+                  <span className="text-white mt-1 text-[18px]">•</span>
+                  <span className="text-white/70 text-[16px]">Custom handmade notes for every lesson</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-[#2F6FED] mt-1">•</span>
-                  <span className="text-[#94A3B8]">Student progress tracking</span>
+                  <span className="text-white mt-1 text-[18px]">•</span>
+                  <span className="text-white/70 text-[16px]">100% Edexcel-style practice questions</span>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="text-[#2F6FED] mt-1">•</span>
-                  <span className="text-[#94A3B8]">Smart learning recommendations</span>
+                  <span className="text-white mt-1 text-[18px]">•</span>
+                  <span className="text-white/70 text-[16px]">Full mock exams and progress tracking</span>
                 </div>
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
-              <h2 className="text-2xl font-semibold mb-4 text-[#A9C7FF]">Our Commitment</h2>
-              <p className="text-[#94A3B8] leading-relaxed mb-4">
-                StudySouq provides an innovative way for students to learn at their own pace, get instant AI feedback, and strengthen weak areas.
+            <section className="bg-black border-2 border-white/20 p-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">Our Commitment</h2>
+              <p className="text-white/70 leading-relaxed mb-4 text-[16px]">
+                StudySouq provides unlimited practice with AI-generated questions, ensuring you never run out of problems to solve.
               </p>
-              <p className="text-[#94A3B8] leading-relaxed">
-                We are committed to making exam preparation easier, smarter, and more effective for every learner.
+              <p className="text-white/70 leading-relaxed text-[16px]">
+                We are committed to making exam preparation easier, smarter, and more effective with 24/7 AI tutor support.
               </p>
             </section>
 
             {/* Features Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-              <div className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-6">
-                <div className="w-12 h-12 bg-[#2F6FED]/20 rounded-xl flex items-center justify-center mb-4">
-                  <Target className="w-6 h-6 text-[#2F6FED]" />
+              <div className="bg-black border-2 border-white/20 p-6">
+                <div className="w-12 h-12 border-2 border-white/30 flex items-center justify-center mb-4">
+                  <Target className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Personalized Learning</h3>
-                <p className="text-[#94A3B8] text-sm">
-                  Adaptive content tailored to your learning pace and style
+                <h3 className="text-[20px] font-bold mb-2 text-white">Infinite Questions</h3>
+                <p className="text-white/70 text-[14px]">
+                  Unlimited AI-generated practice problems on every lesson
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-6">
-                <div className="w-12 h-12 bg-[#2F6FED]/20 rounded-xl flex items-center justify-center mb-4">
-                  <Award className="w-6 h-6 text-[#2F6FED]" />
+              <div className="bg-black border-2 border-white/20 p-6">
+                <div className="w-12 h-12 border-2 border-white/30 flex items-center justify-center mb-4">
+                  <Award className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Exam-Focused</h3>
-                <p className="text-[#94A3B8] text-sm">
-                  Content aligned with Edexcel Mathematics syllabus
+                <h3 className="text-[20px] font-bold mb-2 text-white">Edexcel Focused</h3>
+                <p className="text-white/70 text-[14px]">
+                  A-Level & O-Level Mathematics only - 100% exam-aligned
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-6">
-                <div className="w-12 h-12 bg-[#2F6FED]/20 rounded-xl flex items-center justify-center mb-4">
-                  <BookOpen className="w-6 h-6 text-[#2F6FED]" />
+              <div className="bg-black border-2 border-white/20 p-6">
+                <div className="w-12 h-12 border-2 border-white/30 flex items-center justify-center mb-4">
+                  <BookOpen className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Comprehensive Materials</h3>
-                <p className="text-[#94A3B8] text-sm">
-                  Complete coverage of all topics and learning objectives
+                <h3 className="text-[20px] font-bold mb-2 text-white">Handmade Notes</h3>
+                <p className="text-white/70 text-[14px]">
+                  Custom notes for every lesson, designed for clarity
                 </p>
               </div>
 
-              <div className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-6">
-                <div className="w-12 h-12 bg-[#2F6FED]/20 rounded-xl flex items-center justify-center mb-4">
-                  <Users className="w-6 h-6 text-[#2F6FED]" />
+              <div className="bg-black border-2 border-white/20 p-6">
+                <div className="w-12 h-12 border-2 border-white/30 flex items-center justify-center mb-4">
+                  <Users className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">AI Tutor Support</h3>
-                <p className="text-[#94A3B8] text-sm">
-                  Get instant help and guidance whenever you need it
+                <h3 className="text-[20px] font-bold mb-2 text-white">24/7 AI Tutor</h3>
+                <p className="text-white/70 text-[14px]">
+                  Instant help trained on 10,000+ questions
                 </p>
               </div>
             </div>
 
             {/* Call to Action */}
-            <section className="bg-gradient-to-br from-[#2F6FED]/10 to-[#A9C7FF]/10 border border-[#2F6FED]/30 rounded-2xl p-8 text-center mt-8">
-              <h2 className="text-2xl font-semibold mb-4">Ready to Excel in Mathematics?</h2>
-              <p className="text-[#94A3B8] mb-6">
-                Join thousands of students who are achieving their academic goals with StudySouq
+            <section className="bg-black border-2 border-white p-8 text-center mt-8">
+              <h2 className="text-[24px] font-bold mb-4 text-white">Ready to Excel in Mathematics?</h2>
+              <p className="text-white/70 mb-6 text-[16px]">
+                Join students mastering A-Level & O-Level Edexcel Maths with infinite AI practice
               </p>
-              <a
-                href="/signup"
-                className="inline-block px-8 py-3 bg-[#2F6FED] hover:bg-[#2F6FED]/80 transition-all duration-300"
-                style={{
-                  borderRadius: '9999px',
-                  fontWeight: '600',
-                  boxShadow: '0 10px 30px rgba(47, 111, 237, 0.5)'
-                }}
+              <Link
+                to="/signup"
+                className="inline-block px-8 py-4 bg-white text-black font-bold hover:bg-white/90 transition-all duration-300 text-[16px]"
               >
                 Get Started
-              </a>
+              </Link>
             </section>
           </div>
         </motion.div>
@@ -135,4 +142,3 @@ export default function AboutPage() {
     </div>
   );
 }
-

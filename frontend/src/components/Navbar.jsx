@@ -18,13 +18,9 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: "Home", path: "/", sectionId: "home" },
     { name: "Subjects", path: "/subjects" },
-    { name: "Pricing", path: "/pricing", sectionId: "pricing-plans" },
+    { name: "Pricing", path: "/", sectionId: "pricing" },
     { name: "About", path: "/about" },
-    { name: "Sample Content", path: "/sample-content" },
-    { name: "Refund Policy", path: "/refund-policy" },
-    { name: "Contact Us", path: "/contact" },
   ];
 
   const scrollToSection = (sectionId) => {
@@ -59,27 +55,26 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className="sticky top-0 z-40 backdrop-blur-lg border-b border-white/20 shadow-lg shadow-black/10 transition-colors"
-        style={{ backgroundColor: "#0B1A2C" }}
+        className="w-full sticky top-0 z-40 border-b border-white/10 bg-black"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14 md:h-18">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <Link
               to="/"
-              className="flex items-center justify-center rounded-xl bg-[#163162] px-2 py-1 md:px-3 md:py-2"
+              className="flex items-center justify-center py-1"
             >
-              <Logo className="w-18 h-12 md:w-16 md:h-16" />
+              <Logo className="w-24 sm:w-28 h-auto" />
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="hidden md:flex items-center gap-6 lg:gap-8">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   to={link.path}
                   onClick={(event) => handleNavClick(event, link)}
-                  className="text-[#94A3B8] hover:text-white transition-colors"
+                  className="text-[14px] text-white/80 hover:text-white transition-colors whitespace-nowrap font-medium"
                 >
                   {link.name}
                 </Link>
@@ -88,14 +83,14 @@ export default function Navbar() {
                 <div className="flex items-center space-x-4">
                   <Link
                     to="/profile"
-                    className="flex items-center space-x-2 text-[#94A3B8] hover:text-white transition-colors"
+                    className="flex items-center space-x-2 text-white/70 hover:text-white transition-colors"
                   >
                     <User className="w-5 h-5" />
                     <span>{user.name}</span>
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="text-[#94A3B8] hover:text-white transition-colors"
+                    className="text-white/70 hover:text-white transition-colors"
                   >
                     Logout
                   </button>
@@ -103,7 +98,7 @@ export default function Navbar() {
               ) : (
                 <Link
                   to="/login"
-                  className="px-6 py-2 bg-[#2F6FED] hover:bg-[#2F6FED]/80 rounded-lg transition-colors"
+                  className="px-8 py-3 bg-white text-black hover:bg-white/90 transition-colors text-[14px] font-semibold"
                 >
                   Login
                 </Link>
@@ -113,7 +108,7 @@ export default function Navbar() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+              className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors text-white"
             >
               {mobileMenuOpen ? (
                 <X className="w-6 h-6" />
@@ -144,14 +139,14 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 bottom-0 w-80 bg-[#D0E1FF]/95 border-l border-white/10 z-50 md:hidden overflow-y-auto"
+              className="fixed top-0 right-0 bottom-0 w-80 bg-black/95 backdrop-blur-lg border-l border-white/20 z-50 md:hidden overflow-y-auto"
             >
               <div className="p-6">
                 <div className="flex justify-between items-center mb-8">
-                  <span className="tracking-wide">Menu</span>
+                  <span className="tracking-wide text-white">Menu</span>
                   <button
                     onClick={() => setMobileMenuOpen(false)}
-                    className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+                    className="p-2 rounded-lg hover:bg-white/10 transition-colors text-white"
                   >
                     <X className="w-6 h-6" />
                   </button>
@@ -163,7 +158,7 @@ export default function Navbar() {
                       key={link.name}
                       to={link.path}
                       onClick={(event) => handleNavClick(event, link)}
-                      className="block px-4 py-3 rounded-lg text-[#94A3B8] hover:text-white hover:bg-white/5 transition-colors"
+                      className="block px-4 py-3 rounded-lg text-white/70 hover:text-white hover:bg-white/5 transition-colors"
                     >
                       {link.name}
                     </Link>
@@ -175,14 +170,14 @@ export default function Navbar() {
                         <Link
                           to="/profile"
                           onClick={() => setMobileMenuOpen(false)}
-                          className="flex items-center space-x-2 px-4 py-3 rounded-lg text-[#94A3B8] hover:text-white hover:bg-white/5 transition-colors mb-2"
+                          className="flex items-center space-x-2 px-4 py-3 rounded-lg text-white/70 hover:text-white hover:bg-white/5 transition-colors mb-2"
                         >
                           <User className="w-5 h-5" />
                           <span>{user.name}</span>
                         </Link>
                         <button
                           onClick={handleLogout}
-                          className="w-full text-left px-4 py-3 rounded-lg text-[#94A3B8] hover:text-white hover:bg-white/5 transition-colors"
+                          className="w-full text-left px-4 py-3 rounded-lg text-white/70 hover:text-white hover:bg-white/5 transition-colors"
                         >
                           Logout
                         </button>
@@ -192,14 +187,14 @@ export default function Navbar() {
                         <Link
                           to="/login"
                           onClick={() => setMobileMenuOpen(false)}
-                          className="block px-4 py-3 rounded-lg bg-[#2F6FED] hover:bg-[#2F6FED]/80 text-center transition-colors mb-2"
+                          className="block px-4 py-3 rounded-lg bg-white text-black hover:bg-white/90 text-center transition-colors mb-2 font-semibold"
                         >
                           Login
                         </Link>
                         <Link
                           to="/signup"
                           onClick={() => setMobileMenuOpen(false)}
-                          className="block px-4 py-3 rounded-lg border border-[#2F6FED] hover:bg-[#2F6FED]/10 text-center transition-colors"
+                          className="block px-4 py-3 rounded-lg border-2 border-white text-white hover:bg-white/10 text-center transition-colors"
                         >
                           Sign Up
                         </Link>

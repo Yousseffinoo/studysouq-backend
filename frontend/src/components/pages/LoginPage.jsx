@@ -21,7 +21,7 @@ export default function LoginPage() {
 
     try {
       const result = await login(email, password);
-      
+
       if (result.success) {
         // Redirect back to where user came from, or default based on role
         const from = location.state?.from || (result.user.role === 'admin' ? '/admin/dashboard' : '/subjects');
@@ -42,96 +42,99 @@ export default function LoginPage() {
     }
   };
 
-  return <div className="min-h-screen flex items-center justify-center px-4 py-20">
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 py-20 bg-black">
       <div className="w-full max-w-md">
-        <motion.div initial={{
-        opacity: 0,
-        y: 30
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        duration: 0.6
-      }}>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
           {/* Logo */}
-          <div className="text-center mb-8">
-            <Logo className="w-20 md:w-32 h-auto mx-auto mb-4" />
-            <h1 className="mb-2">Welcome Back</h1>
-            <p className="text-[#94A3B8]">Sign in to continue your learning journey</p>
+          <div className="text-center mb-12">
+            <Logo className="w-20 md:w-32 h-auto mx-auto mb-6" />
+            <h1 className="text-white text-[32px] sm:text-[40px] font-bold mb-3">Welcome Back</h1>
+            <p className="text-white/60 text-[16px]">Sign in to continue your learning journey</p>
           </div>
 
           {/* Form */}
-          <div className="bg-gradient-to-br from-[#0B1D34] to-[#0B1D34]/50 border border-white/10 rounded-2xl p-8">
+          <div className="bg-black border-2 border-white/20 p-8 sm:p-10">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {error && <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+              {error && (
+                <div className="p-4 bg-red-500/10 border-2 border-red-500/50 text-red-400 text-[14px]">
                   {error}
-                </div>}
+                </div>
+              )}
 
               <div>
-                <label className="block text-sm mb-2 text-[#94A3B8]">Email</label>
+                <label className="block text-[14px] mb-3 text-white/70 font-bold uppercase tracking-wider">
+                  Email
+                </label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94A3B8]" />
-                  <input 
-                    type="email" 
-                    value={email} 
-                    onChange={e => setEmail(e.target.value)} 
-                    placeholder="your@email.com" 
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
                     autoComplete="off"
-                    className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-[#2F6FED] transition-colors" 
+                    className="w-full pl-12 pr-4 py-4 bg-white/5 border-2 border-white/20 text-white placeholder-white/30 focus:outline-none focus:border-white transition-colors text-[16px]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm mb-2 text-[#94A3B8]">Password</label>
+                <label className="block text-[14px] mb-3 text-white/70 font-bold uppercase tracking-wider">
+                  Password
+                </label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94A3B8]" />
-                  <input 
-                    type="password" 
-                    value={password} 
-                    onChange={e => setPassword(e.target.value)} 
-                    placeholder="••••••••" 
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
                     autoComplete="new-password"
-                    className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-[#2F6FED] transition-colors" 
+                    className="w-full pl-12 pr-4 py-4 bg-white/5 border-2 border-white/20 text-white placeholder-white/30 focus:outline-none focus:border-white transition-colors text-[16px]"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center text-[#94A3B8]">
-                  <input type="checkbox" className="mr-2 rounded" />
+              <div className="flex items-center justify-between text-[14px]">
+                <label className="flex items-center text-white/70">
+                  <input
+                    type="checkbox"
+                    className="mr-2 w-4 h-4 border-2 border-white/20 bg-white/5 focus:ring-0 focus:ring-offset-0"
+                  />
                   Remember me
                 </label>
-                <Link to="/forgot-password" className="text-[#2F6FED] hover:text-[#A9C7FF] transition-colors">
+                <Link
+                  to="/forgot-password"
+                  className="text-white hover:text-white/70 transition-colors underline"
+                >
                   Forgot password?
                 </Link>
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={loading}
-                style={{
-                  borderRadius: '9999px',
-                  padding: '16px 32px',
-                  backgroundColor: '#2F6FED',
-                  fontWeight: '600',
-                  boxShadow: '0 10px 30px rgba(47, 111, 237, 0.5)'
-                }}
-                className="w-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:scale-105 hover:shadow-xl"
+                className="w-full py-4 bg-white text-black text-[16px] font-bold hover:bg-white/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading && <Loader2 className="w-5 h-5 animate-spin" />}
                 {loading ? 'Signing in...' : 'Sign In'}
               </button>
             </form>
 
-            <div className="mt-6 text-center text-sm text-[#94A3B8]">
+            <div className="mt-8 text-center text-[14px] text-white/70">
               Don't have an account?{' '}
-              <Link to="/signup" className="text-[#2F6FED] hover:text-[#A9C7FF] transition-colors">
+              <Link to="/signup" className="text-white hover:text-white/70 transition-colors underline font-bold">
                 Sign up
               </Link>
             </div>
           </div>
         </motion.div>
       </div>
-    </div>;
+    </div>
+  );
 }
