@@ -136,8 +136,8 @@ export default function HomePage() {
       </div>
 
       {/* PROBLEM SECTION */}
-      <section id="why-studysouq" className="relative py-24 px-6">
-        <div className="max-w-5xl mx-auto space-y-24">
+      <section id="why-studysouq" className="relative py-16 px-6">
+        <div className="max-w-5xl mx-auto space-y-16">
           <ProblemStatement text="Traditional tutoring is expensive." delay={0} />
           <ProblemStatement text="Practice questions don't adapt to you." delay={0} />
           <ProblemStatement text="You keep making the same mistakes." delay={0} />
@@ -165,7 +165,7 @@ export default function HomePage() {
       </div>
 
       {/* TUTORING COST COMPARISON */}
-      <section className="relative py-24 px-6 bg-white/[0.01]">
+      <section className="relative py-16 px-6 bg-white/[0.01]">
         <div className="max-w-6xl mx-auto">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
@@ -251,7 +251,7 @@ export default function HomePage() {
       </div>
 
       {/* FEATURES SECTION */}
-      <section className="relative py-24 px-6">
+      <section className="relative py-16 px-6">
         <div className="max-w-7xl mx-auto">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
@@ -297,7 +297,7 @@ export default function HomePage() {
       </div>
 
       {/* HOW IT WORKS */}
-      <section className="relative py-24 px-6 bg-white/[0.01]">
+      <section className="relative py-16 px-6 bg-white/[0.01]">
         <div className="max-w-7xl mx-auto">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
@@ -340,8 +340,8 @@ export default function HomePage() {
       </div>
 
       {/* SOLUTION SECTION */}
-      <section className="relative py-24 px-6">
-        <div className="max-w-5xl mx-auto space-y-24">
+      <section className="relative py-16 px-6">
+        <div className="max-w-5xl mx-auto space-y-16">
           <SolutionStatement text="AI analyzes every answer." delay={0} />
           <SolutionStatement text="Identifies your weak spots." delay={0} />
           <SolutionStatement text="Gives you targeted practice." delay={0} />
@@ -369,7 +369,7 @@ export default function HomePage() {
       </div>
 
       {/* EXAMPLE QUESTION SHOWCASE */}
-      <section className="relative py-24 px-6 bg-white/[0.01]">
+      <section className="relative py-16 px-6 bg-white/[0.01]">
         <div className="max-w-6xl mx-auto">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
@@ -470,7 +470,7 @@ export default function HomePage() {
       </div>
 
       {/* PRICING SECTION */}
-      <section id="pricing" className="relative py-24 px-6">
+      <section id="pricing" className="relative py-16 px-6">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -542,7 +542,7 @@ export default function HomePage() {
       </section>
 
       {/* FINAL CTA */}
-      <section className="relative py-32 px-6 bg-white/[0.01]">
+      <section className="relative py-16 px-6 bg-white/[0.01]">
         <div className="max-w-4xl mx-auto text-center">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}

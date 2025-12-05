@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { FileText, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
-import { getLessonsBySection, getSectionById, getSubjectById } from '../../services/publicService';
+import { getLessons, getLessonsBySection, getSectionById, getSubjectById } from '../../services/publicService';
 
 export default function LessonsListPage() {
   const { subjectId, sectionId } = useParams();
