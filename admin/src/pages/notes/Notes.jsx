@@ -22,6 +22,7 @@ import {
   deleteNote
 } from '../../services/admin/notesService'
 import { getLessons } from '../../services/admin/lessonsService'
+import { uploadImage } from '../../services/admin/imagesService'
 
 export function Notes() {
   const { confirm, ConfirmDialog } = useConfirm()
@@ -36,6 +37,7 @@ export function Notes() {
     notesText: '',
     notesImages: [],
     isPremium: true,
+    class: '9th', // Add class field
   })
   const [imageFiles, setImageFiles] = useState([])
   const [submitting, setSubmitting] = useState(false)
@@ -59,14 +61,16 @@ export function Notes() {
   const loadData = async () => {
     try {
       setLoading(true)
+      // Use smaller limits to avoid timeout - load in batches if needed
       const [notesResponse, lessonsResponse] = await Promise.all([
-        getNotes({ limit: 1000 }),
-        getLessons({ limit: 1000 })
+        getNotes({ limit: 100, page: 1 }),
+        getLessons({ limit: 100, page: 1 })
       ])
       
-      // Handle response structure - API.get returns data directly or wrapped
-      const notesData = notesResponse?.notes || notesResponse || []
-      const lessonsData = lessonsResponse?.lessons || lessonsResponse || []
+      // Handle response structure - Backend returns { success: true, data: { notes: [...], ... } }
+      // API.get unwraps to return data directly
+      const notesData = notesResponse?.notes || (Array.isArray(notesResponse) ? notesResponse : [])
+      const lessonsData = lessonsResponse?.lessons || (Array.isArray(lessonsResponse) ? lessonsResponse : [])
       
       // Map backend fields to frontend format
       const mappedNotes = (Array.isArray(notesData) ? notesData : []).map(note => ({
@@ -81,7 +85,18 @@ export function Notes() {
       setLessons(Array.isArray(lessonsData) ? lessonsData : [])
     } catch (error) {
       console.error('Failed to load data:', error)
-      toast.error('Failed to load data')
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to load data'
+      if (error.message?.includes('timeout')) {
+        errorMessage = 'Request timed out. Please try again or check your connection.'
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Server error. Please try again later.'
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message
+      }
+      
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -106,6 +121,7 @@ export function Notes() {
         notesText: note.notesText || note.content || '',
         notesImages: note.notesImages || note.images || [],
         isPremium: note.isPremium !== undefined ? note.isPremium : true,
+        class: note.class || '9th',
       })
     } else {
       setEditingNote(null)
@@ -114,6 +130,7 @@ export function Notes() {
         notesText: '',
         notesImages: [],
         isPremium: true,
+        class: '9th',
       })
     }
     setImageFiles([])
@@ -128,6 +145,7 @@ export function Notes() {
       notesText: '',
       notesImages: [],
       isPremium: true,
+      class: '9th',
     })
     setImageFiles([])
   }
@@ -183,23 +201,146 @@ export function Notes() {
     setSubmitting(true)
     
     try {
+      // Validate and normalize subject to match Note model enum
+      const validSubjects = ['physics', 'chemistry', 'mathematics', 'biology', 'computer-science']
+      let normalizedSubject = (lesson.subject || 'physics').toLowerCase().trim()
+      
+      // Map common variations to valid enum values
+      const subjectMap = {
+        'math': 'mathematics',
+        'maths': 'mathematics',
+        'bio': 'biology',
+        'cs': 'computer-science',
+        'computer science': 'computer-science'
+      }
+      
+      if (subjectMap[normalizedSubject]) {
+        normalizedSubject = subjectMap[normalizedSubject]
+      }
+      
+      // If subject doesn't match enum, default to physics
+      if (!validSubjects.includes(normalizedSubject)) {
+        console.warn(`Subject "${lesson.subject}" doesn't match enum, defaulting to "physics"`)
+        normalizedSubject = 'physics'
+      }
+      
+      // Ensure chapter is a number
+      const chapterNumber = Number(lesson.chapter)
+      if (isNaN(chapterNumber) || chapterNumber < 1) {
+        toast.error('Lesson must have a valid chapter number')
+        setSubmitting(false)
+        return
+      }
+      
+      // Validate class enum
+      const validClasses = ['9th', '10th', '11th', '12th']
+      const selectedClass = formData.class || '9th'
+      if (!validClasses.includes(selectedClass)) {
+        toast.error('Invalid class selected')
+        setSubmitting(false)
+        return
+      }
+      
+      // Upload new image files first (if any)
+      const uploadedImageUrls = []
+      if (imageFiles && imageFiles.length > 0) {
+        toast.loading(`Uploading ${imageFiles.length} image(s)...`, { id: 'upload-images' })
+        try {
+          for (let i = 0; i < imageFiles.length; i++) {
+            const file = imageFiles[i]
+            try {
+              const uploadResult = await uploadImage({
+                image: file,
+                title: `Note image - ${file.name}`,
+                category: 'other' // Use 'other' as 'notes' might not be in enum
+              })
+              
+              // Handle different response structures
+              let imageUrl = null
+              let imagePublicId = null
+              let imageTitle = file.name
+              
+              if (uploadResult) {
+                // Direct response structure
+                if (uploadResult.url) {
+                  imageUrl = uploadResult.url
+                  imagePublicId = uploadResult.publicId || ''
+                  imageTitle = uploadResult.title || file.name
+                }
+                // Nested data structure (from API.upload)
+                else if (uploadResult.data) {
+                  imageUrl = uploadResult.data.url
+                  imagePublicId = uploadResult.data.publicId || ''
+                  imageTitle = uploadResult.data.title || file.name
+                }
+              }
+              
+              if (imageUrl) {
+                uploadedImageUrls.push({
+                  url: imageUrl,
+                  caption: imageTitle,
+                  publicId: imagePublicId
+                })
+              } else {
+                console.warn('Upload result missing URL:', uploadResult)
+                toast.error(`Failed to get URL for ${file.name}`, { id: 'upload-images' })
+              }
+            } catch (uploadError) {
+              console.error('Failed to upload image:', uploadError)
+              const errorMsg = uploadError.response?.data?.message || uploadError.message || 'Upload failed'
+              toast.error(`Failed to upload ${file.name}: ${errorMsg}`, { id: 'upload-images' })
+            }
+          }
+          toast.dismiss('upload-images')
+          if (uploadedImageUrls.length > 0) {
+            toast.success(`${uploadedImageUrls.length} image(s) uploaded successfully`)
+          } else if (imageFiles.length > 0) {
+            toast.error('No images were uploaded successfully')
+            setSubmitting(false)
+            return
+          }
+        } catch (error) {
+          toast.dismiss('upload-images')
+          console.error('Error uploading images:', error)
+          toast.error('Error uploading images. Please try again.')
+          setSubmitting(false)
+          return
+        }
+      }
+      
+      // Combine uploaded images with existing images (URLs only, skip base64)
+      const existingImages = (formData.notesImages || [])
+        .filter((img) => {
+          if (!img) return false
+          const imgStr = typeof img === 'string' ? img : img.url || ''
+          // Only include URLs (not base64 data URIs)
+          return imgStr.length > 0 && !imgStr.startsWith('data:image')
+        })
+        .map((img) => {
+          const imgStr = typeof img === 'string' ? img : img.url || img
+          return {
+            url: imgStr,
+            caption: (typeof img === 'object' && img.caption) || '',
+            publicId: (typeof img === 'object' && img.publicId) || ''
+          }
+        })
+      
+      // Combine all images
+      const formattedImages = [...uploadedImageUrls, ...existingImages]
+      
       // Map frontend form data to backend format
       const noteData = {
         title: lesson.title || 'Untitled Note', // Use lesson title as note title
-        content: formData.notesText, // Map notesText to content
+        content: formData.notesText.trim(), // Map notesText to content
         lesson: formData.lessonId, // Map lessonId to lesson
-        subject: lesson.subject || 'physics', // Get from lesson
-        class: lesson.class || '9th', // Get from lesson
-        chapter: lesson.chapter || 1, // Get from lesson
+        subject: normalizedSubject, // Normalized subject
+        class: selectedClass, // Use form class field
+        chapter: chapterNumber, // Ensure it's a number
         type: 'summary', // Default type
         isPremium: formData.isPremium !== undefined ? formData.isPremium : true,
         isVisible: true,
         // Map images - backend expects array of {url, caption, publicId}
-        images: (formData.notesImages || []).map((img, index) => ({
-          url: typeof img === 'string' ? img : img.url || img,
-          caption: img.caption || '',
-          publicId: img.publicId || ''
-        }))
+        images: formattedImages
       }
       
       if (editingNote) {
@@ -213,7 +354,30 @@ export function Notes() {
       handleCloseSlideOver()
     } catch (error) {
       console.error('Failed to save note:', error)
-      const errorMessage = error.response?.data?.message || error.response?.data?.errors?.join(', ') || error.message || 'Failed to save note'
+      
+      // Handle validation errors with detailed messages
+      let errorMessage = 'Failed to save note'
+      
+      if (error.response?.data) {
+        const errorData = error.response.data
+        
+        // Handle array of error messages
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+          errorMessage = errorData.errors.join(', ')
+        } 
+        // Handle single error message
+        else if (errorData.message) {
+          errorMessage = errorData.message
+        }
+        // Handle field-specific errors
+        else if (errorData.fieldErrors) {
+          const fieldMessages = Object.values(errorData.fieldErrors).join(', ')
+          errorMessage = fieldMessages || errorMessage
+        }
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
       toast.error(errorMessage)
     } finally {
       setSubmitting(false)
@@ -390,9 +554,27 @@ export function Notes() {
                     <SelectContent>
                       {lessons.map((lesson) => (
                         <SelectItem key={lesson._id} value={lesson._id}>
-                          {lesson.title} ({lesson.subject} - {lesson.class})
+                          {lesson.title} ({lesson.subject} - Ch. {lesson.chapter})
                         </SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="class">Class</Label>
+                  <Select
+                    value={formData.class}
+                    onValueChange={(value) => setFormData({ ...formData, class: value })}
+                  >
+                    <SelectTrigger data-cursor="hover">
+                      <SelectValue placeholder="Select class" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="9th">9th</SelectItem>
+                      <SelectItem value="10th">10th</SelectItem>
+                      <SelectItem value="11th">11th</SelectItem>
+                      <SelectItem value="12th">12th</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
