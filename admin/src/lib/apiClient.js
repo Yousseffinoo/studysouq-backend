@@ -14,7 +14,7 @@ const REFRESH_TOKEN_STORAGE_KEY = 'refreshToken'
 // Create axios instance
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // 30 seconds
+  timeout: 60000, // 60 seconds (increased for large payloads like notes with images)
   headers: {
     'Content-Type': 'application/json',
   },
@@ -403,6 +403,5 @@ export const API = {
 
 export { normalizeError, handleLogout }
 export default apiClient
-
 
 
