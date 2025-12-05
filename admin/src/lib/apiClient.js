@@ -7,7 +7,7 @@ import axios from 'axios'
 import toast from 'react-hot-toast'
 
 // Configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 const TOKEN_STORAGE_KEY = 'accessToken'
 const REFRESH_TOKEN_STORAGE_KEY = 'refreshToken'
 
