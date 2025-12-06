@@ -4,7 +4,7 @@ import { motion } from 'motion/react';
 import { ArrowLeft, Lock, BookOpen, Loader2, AlertCircle, Image as ImageIcon } from 'lucide-react';
 import { getLessonById, getNotes } from '../../services/publicService';
 import AITutorChat from '../AITutorChat';
-import MathRenderer from '../MathRenderer';
+import MarkdownViewer from '../MarkdownViewer';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
 
@@ -142,9 +142,9 @@ export default function LessonPage() {
                 lessonNotes ? (
                   <div className="prose prose-invert max-w-none">
                     <div className="bg-white/5 p-6 border-2 border-white/10">
-                      {/* Notes Content with Math Rendering */}
+                      {/* Notes Content with Markdown + Math Rendering */}
                       {lessonNotes.content && (
-                        <MathRenderer
+                        <MarkdownViewer
                           content={lessonNotes.content}
                           className="text-white/90 mb-6"
                         />
@@ -191,7 +191,7 @@ export default function LessonPage() {
                     <div className="bg-white/5 p-6 border-2 border-white/10">
                       <h3 className="text-white mb-4">Introduction</h3>
                       {currentLesson.content ? (
-                        <MathRenderer
+                        <MarkdownViewer
                           content={currentLesson.content}
                           className="text-white/80"
                         />

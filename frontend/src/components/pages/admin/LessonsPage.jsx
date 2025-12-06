@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, Eye, EyeOff, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import AdminLayout from '../../admin/AdminLayout';
-import RichTextEditor from '../../admin/RichTextEditor';
+import MarkdownEditor from '../../admin/MarkdownEditor';
 import { getAllLessons, createLesson, updateLesson, deleteLesson } from '../../../services/adminService';
 
 export default function LessonsPage() {
@@ -379,12 +379,15 @@ export default function LessonsPage() {
               </div>
 
               <div>
-                <label className="block text-sm mb-2 text-[#94A3B8]">Content *</label>
-                <RichTextEditor
+                <label className="block text-sm mb-2 text-[#94A3B8]">Content * (Markdown + LaTeX support)</label>
+                <MarkdownEditor
                   value={formData.content}
                   onChange={(value) => setFormData({ ...formData, content: value })}
-                  placeholder="Write the lesson content here. Supports rich text, formulas, and images..."
+                  placeholder="Write your lesson content in Markdown. Use $formula$ for inline math, $$formula$$ for block math..."
                 />
+                <p className="text-xs text-[#94A3B8] mt-2">
+                  💡 <strong>Supports:</strong> Headings (#), **bold**, *italic*, lists, tables, code blocks, LaTeX math, and image uploads
+                </p>
               </div>
 
               <div className="flex gap-4">

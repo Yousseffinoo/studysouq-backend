@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, X, FileText } from 'lucide-react';
 import { toast } from 'react-toastify';
 import AdminLayout from '../../admin/AdminLayout';
-import RichTextEditor from '../../admin/RichTextEditor';
+import MarkdownEditor from '../../admin/MarkdownEditor';
 import { getAllNotes, createNote, updateNote, deleteNote, getAllLessons } from '../../../services/adminService';
 
 export default function NotesPage() {
@@ -449,12 +449,15 @@ export default function NotesPage() {
               </div>
 
               <div>
-                <label className="block text-sm mb-2 text-[#94A3B8]">Content * (Supports LaTeX formulas)</label>
-                <RichTextEditor
+                <label className="block text-sm mb-2 text-[#94A3B8]">Content * (Markdown + LaTeX support)</label>
+                <MarkdownEditor
                   value={formData.content}
                   onChange={(value) => setFormData({ ...formData, content: value })}
-                  placeholder="Write the note content here. Use formula button for LaTeX math expressions..."
+                  placeholder="Write your content in Markdown. Use $formula$ for inline math, $$formula$$ for block math, and click the image icon to upload images..."
                 />
+                <p className="text-xs text-[#94A3B8] mt-2">
+                  💡 <strong>Markdown supported:</strong> Use # for headings, **bold**, *italic*, - for lists, ``` for code blocks, and LaTeX for math
+                </p>
               </div>
 
               <div>
