@@ -35,10 +35,15 @@ export default function LessonPage() {
           console.log('Current Lesson:', lessonResult.data);
 
           // Fetch notes for this lesson
+          console.log('=== FETCHING NOTES FOR LESSON ID:', lessonId);
           const notesResult = await getNotes({ lesson: lessonId });
-          console.log('=== NOTES FETCH ===');
+          console.log('=== NOTES FETCH RESPONSE ===');
           console.log('Notes Result:', notesResult);
-          console.log('Notes Data:', notesResult.data);
+          console.log('Notes Data Array:', notesResult.data);
+          console.log('Number of notes found:', notesResult.data?.length || 0);
+          if (notesResult.data && notesResult.data.length > 0) {
+            console.log('First note lesson field:', notesResult.data[0].lesson);
+          }
 
           if (notesResult.success && notesResult.data.length > 0) {
             console.log('Setting lesson notes to:', notesResult.data[0]);

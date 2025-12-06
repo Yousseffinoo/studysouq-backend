@@ -23,10 +23,14 @@ export const getNotes = async (req, res) => {
         { content: { $regex: search, $options: 'i' } }
       ];
     }
-    
+
     if (subject) query.subject = subject;
     if (classFilter) query.class = classFilter;
-    if (lesson) query.lesson = lesson;
+    if (lesson) {
+      console.log('=== PUBLIC NOTES API: QUERYING FOR LESSON ===');
+      console.log('Lesson ID from query:', lesson);
+      query.lesson = lesson;
+    }
 
     // Check if user is authenticated and premium
     const user = req.user; // From protect middleware if present
@@ -37,6 +41,7 @@ export const getNotes = async (req, res) => {
       query.isPremium = false;
     }
 
+    console.log('Final query:', JSON.stringify(query));
     const notes = await Note.find(query)
       .populate('lesson', 'title')
       .select('title content summary subject class chapter type tags images isPremium slug')
@@ -46,6 +51,12 @@ export const getNotes = async (req, res) => {
       .lean();
 
     const count = await Note.countDocuments(query);
+
+    console.log('Notes found:', count);
+    console.log('Notes returned:', notes.length);
+    if (notes.length > 0) {
+      console.log('First note:', JSON.stringify(notes[0], null, 2));
+    }
 
     res.status(200).json({
       success: true,
