@@ -704,21 +704,15 @@ export default function HomePage() {
 function ProblemStatement({ text, delay }) {
   return (
     <motion.div
-      initial={{ opacity: 0, x: -100 }}
-      whileInView={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
       transition={{ duration: 0.8, delay, ease: "easeOut" }}
       className="text-center min-h-[30vh] flex items-center justify-center"
     >
-      <motion.p 
-        className="text-white/60 text-[28px] sm:text-[36px] md:text-[44px] font-bold leading-[1.1] max-w-4xl line-through decoration-white/30"
-        whileInView={{ 
-          textDecorationColor: "rgba(255,255,255,0.5)"
-        }}
-        transition={{ delay: delay + 0.3 }}
-      >
+      <p className="text-white/70 text-[28px] sm:text-[36px] md:text-[44px] font-bold leading-[1.1] max-w-4xl">
         {text}
-      </motion.p>
+      </p>
     </motion.div>
   );
 }
@@ -726,20 +720,15 @@ function ProblemStatement({ text, delay }) {
 function SolutionStatement({ text, delay }) {
   return (
     <motion.div
-      initial={{ opacity: 0, x: 100 }}
-      whileInView={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
       transition={{ duration: 0.8, delay, ease: "easeOut" }}
       className="text-center min-h-[30vh] flex items-center justify-center"
     >
-      <motion.p 
-        className="text-white text-[28px] sm:text-[36px] md:text-[44px] font-bold leading-[1.1] max-w-4xl"
-        initial={{ scale: 0.9 }}
-        whileInView={{ scale: 1 }}
-        transition={{ delay: delay + 0.2, duration: 0.5 }}
-      >
-        ✓ {text}
-      </motion.p>
+      <p className="text-white text-[28px] sm:text-[36px] md:text-[44px] font-bold leading-[1.1] max-w-4xl">
+        {text}
+      </p>
     </motion.div>
   );
 }

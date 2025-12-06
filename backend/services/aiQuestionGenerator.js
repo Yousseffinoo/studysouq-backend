@@ -285,7 +285,9 @@ export async function generateQuestionsWithAI(options) {
  * Review Student Answer (Mathius Tutor Mode)
  */
 export async function reviewStudentAnswer(question, studentAnswer, answerType = 'text') {
-  const prompt = `You are Mathius, an expert and encouraging mathematics tutor.
+  const isImageAnswer = studentAnswer.startsWith('data:image') || answerType === 'draw' || answerType === 'upload';
+  
+  const textPrompt = `You are Mathius, an expert and encouraging mathematics tutor.
 
 QUESTION:
 ${question.questionText}
@@ -295,11 +297,10 @@ ${question.answerText}
 
 MARKS: ${question.marks}
 
-STUDENT'S ANSWER:
-${studentAnswer}
+${isImageAnswer ? 'STUDENT\'S ANSWER: [See the attached image of their handwritten work]' : `STUDENT'S ANSWER:\n${studentAnswer}`}
 
 TASK:
-1. Compare student's answer with correct answer
+1. ${isImageAnswer ? 'Analyze the handwritten work in the image carefully' : 'Compare student\'s answer with correct answer'}
 2. Accept mathematically equivalent forms
 3. Award partial marks where appropriate
 4. Give encouraging, constructive feedback
@@ -317,9 +318,34 @@ OUTPUT JSON:
 }`;
 
   try {
+    let messages;
+    let model = MODELS.fast;
+
+    if (isImageAnswer && studentAnswer.startsWith('data:image')) {
+      // Use GPT-4 Vision for image answers
+      model = 'gpt-4o';
+      messages = [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: textPrompt },
+            { 
+              type: 'image_url', 
+              image_url: { 
+                url: studentAnswer,
+                detail: 'high'
+              } 
+            }
+          ]
+        }
+      ];
+    } else {
+      messages = [{ role: 'user', content: textPrompt }];
+    }
+
     const response = await openai.chat.completions.create({
-      model: MODELS.fast,
-      messages: [{ role: 'user', content: prompt }],
+      model,
+      messages,
       temperature: 0.2,
       max_tokens: 1024,
       response_format: { type: 'json_object' }

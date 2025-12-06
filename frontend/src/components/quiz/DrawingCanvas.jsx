@@ -149,6 +149,14 @@ export default function DrawingCanvas({ onSave, width = 800 }) {
 
     setIsDrawing(false);
     saveToHistory();
+    
+    // Auto-save canvas to parent
+    const canvas = canvasRef.current;
+    if (canvas && onSave) {
+      canvas.toBlob((blob) => {
+        if (blob) onSave(blob);
+      }, 'image/png');
+    }
   };
 
   const clearCanvas = () => {
@@ -358,16 +366,6 @@ export default function DrawingCanvas({ onSave, width = 800 }) {
       >
         + Add More Paper ({Math.round(canvasHeight / HEIGHT_INCREMENT)} sheets)
       </button>
-
-      {/* Save Button */}
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={saveCanvas}
-        className="w-full mt-4 py-3 bg-white text-black font-semibold hover:bg-white/90 transition-colors"
-      >
-        Submit My Answer
-      </motion.button>
     </div>
   );
 }

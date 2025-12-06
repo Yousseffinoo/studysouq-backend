@@ -643,7 +643,15 @@ export default function QuizPage() {
                 {currentAnswer.userAnswer && (
                   <div className="p-4 bg-white/5 border-2 border-white/10">
                     <h4 className="text-white/50 text-sm mb-2">Your Answer</h4>
-                    <p className="text-white">{currentAnswer.userAnswer}</p>
+                    {currentAnswer.userAnswer.startsWith('data:image') ? (
+                      <img 
+                        src={currentAnswer.userAnswer} 
+                        alt="Your drawn answer" 
+                        className="max-w-full h-auto rounded border border-white/20"
+                      />
+                    ) : (
+                      <p className="text-white">{currentAnswer.userAnswer}</p>
+                    )}
                   </div>
                 )}
 
