@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowLeft, Lock, BookOpen, Loader2, AlertCircle, Image as ImageIcon } from 'lucide-react';
-import { getLessonById, getNotes } from '../../services/publicService';
+import { getLessonById } from '../../services/publicService';
 import AITutorChat from '../AITutorChat';
 import MarkdownViewer from '../MarkdownViewer';
 import { useAuth } from '../../contexts/AuthContext';
@@ -25,32 +25,23 @@ export default function LessonPage() {
         setLoading(true);
         setError(null);
 
-        // Fetch lesson details
+        // Fetch lesson details (notes are now embedded in lesson)
         const lessonResult = await getLessonById(lessonId);
         console.log('=== LESSON FETCH ===');
         console.log('Lesson Result:', lessonResult);
 
         if (lessonResult.success) {
-          setCurrentLesson(lessonResult.data);
-          console.log('Current Lesson:', lessonResult.data);
+          const lesson = lessonResult.data;
+          setCurrentLesson(lesson);
+          console.log('Current Lesson:', lesson);
+          console.log('Lesson Notes:', lesson.notes);
 
-          // Fetch notes for this lesson
-          console.log('=== FETCHING NOTES FOR LESSON ID:', lessonId);
-          const notesResult = await getNotes({ lesson: lessonId });
-          console.log('=== NOTES FETCH RESPONSE ===');
-          console.log('Notes Result:', notesResult);
-          console.log('Notes Data Array:', notesResult.data);
-          console.log('Number of notes found:', notesResult.data?.length || 0);
-          if (notesResult.data && notesResult.data.length > 0) {
-            console.log('First note lesson field:', notesResult.data[0].lesson);
-          }
-
-          if (notesResult.success && notesResult.data.length > 0) {
-            console.log('Setting lesson notes to:', notesResult.data[0]);
-            console.log('Note Content:', notesResult.data[0].content);
-            setLessonNotes(notesResult.data[0]); // Use first note if available
+          // Notes are now embedded in the lesson object
+          if (lesson.notes && lesson.notes.content) {
+            setLessonNotes(lesson.notes);
+            console.log('Notes content found:', lesson.notes.content);
           } else {
-            console.log('No notes found');
+            console.log('No notes content in lesson');
           }
         } else {
           setError(lessonResult.message || 'Lesson not found');

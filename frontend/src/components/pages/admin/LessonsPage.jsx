@@ -25,6 +25,11 @@ export default function LessonsPage() {
     difficulty: 'medium',
     duration: 30,
     videoUrl: '',
+    notes: {
+      content: '',
+      summary: '',
+      images: []
+    },
     isPremium: false,
     isVisible: true
   });
@@ -91,6 +96,11 @@ export default function LessonsPage() {
       difficulty: lesson.difficulty,
       duration: lesson.duration,
       videoUrl: lesson.videoUrl || '',
+      notes: {
+        content: lesson.notes?.content || '',
+        summary: lesson.notes?.summary || '',
+        images: lesson.notes?.images || []
+      },
       isPremium: lesson.isPremium,
       isVisible: lesson.isVisible
     });
@@ -110,6 +120,11 @@ export default function LessonsPage() {
       difficulty: 'medium',
       duration: 30,
       videoUrl: '',
+      notes: {
+        content: '',
+        summary: '',
+        images: []
+      },
       isPremium: false,
       isVisible: true
     });
@@ -388,6 +403,43 @@ export default function LessonsPage() {
                 <p className="text-xs text-[#94A3B8] mt-2">
                   💡 <strong>Supports:</strong> Headings (#), **bold**, *italic*, lists, tables, code blocks, LaTeX math, and image uploads
                 </p>
+              </div>
+
+              {/* PREMIUM NOTES SECTION */}
+              <div className="border-2 border-yellow-500/30 bg-yellow-500/5 p-6 rounded-xl">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">📝</span>
+                  <h3 className="text-lg font-semibold text-white">Premium Notes</h3>
+                  <span className="text-xs bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded">Premium Only</span>
+                </div>
+                <p className="text-sm text-white/60 mb-4">
+                  Add detailed notes, formulas, and diagrams for premium users. Notes are displayed on the lesson page.
+                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm mb-2 text-[#94A3B8]">Notes Content (Markdown + LaTeX)</label>
+                    <MarkdownEditor
+                      value={formData.notes.content}
+                      onChange={(value) => setFormData({ ...formData, notes: { ...formData.notes, content: value } })}
+                      placeholder="Write detailed notes with formulas. Use $x^2$ for inline math, $$\\int_0^1 x dx$$ for block math..."
+                    />
+                    <p className="text-xs text-[#94A3B8] mt-2">
+                      ✨ These notes will be visible only to premium users on the lesson page
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm mb-2 text-[#94A3B8]">Summary (optional)</label>
+                    <textarea
+                      value={formData.notes.summary}
+                      onChange={(e) => setFormData({ ...formData, notes: { ...formData.notes, summary: e.target.value } })}
+                      rows="2"
+                      placeholder="Brief summary or key takeaways..."
+                      className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:border-[#2F6FED]"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="flex gap-4">

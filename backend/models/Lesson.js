@@ -49,6 +49,25 @@ const lessonSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  notes: {
+    content: {
+      type: String,
+      default: '' // Markdown content with LaTeX support
+    },
+    images: [{
+      url: String,
+      caption: String,
+      publicId: String
+    }],
+    summary: {
+      type: String,
+      default: ''
+    },
+    lastUpdated: {
+      type: Date,
+      default: Date.now
+    }
+  },
   isPremium: {
     type: Boolean,
     default: false
