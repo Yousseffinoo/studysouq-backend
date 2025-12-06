@@ -36,26 +36,36 @@ app.set('trust proxy', 1);
 // Security middleware
 app.use(helmet());
 
-// CORS configuration
+// CORS configuration - MUST use specific origins with credentials: true
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
   'http://localhost:5173',
   'http://localhost:5174',
+  'http://localhost:5175',
   'https://studysouq.com',
   'https://www.studysouq.com',
-  process.env.FRONTEND_URL
+  'https://studysouq-admin.vercel.app',
+  process.env.FRONTEND_URL,
+  process.env.ADMIN_URL
 ].filter(Boolean);
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
+    // Allow requests with no origin (mobile apps, Postman, server-to-server)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+    // In development, allow all origins
+    if (process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       console.log('❌ CORS blocked origin:', origin);
+      console.log('Allowed origins:', allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -91,7 +101,7 @@ app.use(compression());
 
 // Logging middleware (only in development)
 if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev')); // Log all requests to console
+  app.use(morgan('dev'));
 }
 
 // Serve static files (uploads folder)
@@ -100,33 +110,45 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Uploads folder is at project root level
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Log all admin requests for debugging
-app.use('/api/admin', (req, res, next) => {
-  console.log(`[ADMIN] ${req.method} ${req.originalUrl}`);
-  next();
-});
+// Serve test HTML file
+app.use('/test', express.static(path.join(__dirname, '..')));
 
-// Rate limiting to prevent brute-force attacks
+// Rate limiting - More lenient in development
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per 15 minutes
-  message: 'Too many requests from this IP, please try again after 15 minutes',
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  max: process.env.NODE_ENV === 'development' ? 10000 : 100, // Much higher limit in development
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for health checks
+    return req.path === '/health';
+  }
 });
+
 // Apply rate limiting to all routes
 app.use('/api/', limiter);
 
 // Stricter rate limiting for auth routes
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 login/signup requests per 15 minutes
-  message: 'Too many login attempts, please try again after 15 minutes',
+  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Higher limit in development
+  message: 'Too many authentication attempts, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
-  skipSuccessfulRequests: false, // Count successful requests too
+});
+
+// Health check route
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Server is running',
+    timestamp: new Date().toISOString()
+  });
 });
 // API routes
 app.use('/api/auth', authLimiter, authRoutes);
@@ -141,54 +163,85 @@ app.use('/api/questions', questionsRoutes); // Questions & Quiz system
 
 // Welcome route
 app.get('/', (req, res) => {
-  res.json({
+  res.status(200).json({
+    success: true,
     message: 'Welcome to StudySouq API',
     version: '2.0.0',
     endpoints: {
+      health: '/health',
       auth: '/api/auth',
       users: '/api/users',
+      progress: '/api/progress',
+      admin: '/api/admin',
       subjects: '/api/subjects',
       lessons: '/api/lessons',
       questions: '/api/questions',
-      admin: '/api/admin',
+      payments: '/api/payments',
       chat: '/api/chat'
     }
   });
 });
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Server is healthy',
-    uptime: process.uptime(),
-    timestamp: new Date(),
-  });
-});
-
-// Error handling middleware (MUST be last)
+// 404 handler
 app.use(notFound);
+
+// Error handler
 app.use(errorHandler);
 
 // Start server
 const PORT = process.env.PORT || 5000;
+
 const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV}`);
-  console.log(`URL: http://localhost:${PORT}`);
-  console.log(`Allowed origins:`, allowedOrigins);
+  console.log(`
+    ╔═══════════════════════════════════════════════════════════╗
+    ║                                                           ║
+    ║   🚀  StudySouq API Server                                ║
+    ║                                                           ║
+    ║   📍  Server running on port ${PORT}                       ║
+    ║   🌍  Environment: ${process.env.NODE_ENV || 'development'}                          ║
+    ║   🔗  URL: http://localhost:${PORT}                        ║
+    ║                                                           ║
+    ╚═══════════════════════════════════════════════════════════╝
+  `);
+  console.log('✅ Allowed CORS origins:', allowedOrigins);
 });
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (err, promise) => {
-  console.error(`❌ UNHANDLED REJECTION! Shutting down...`);
-  console.error(`ERROR ORIGIN: ${err.message}`);
-  server.close(() => process.exit(1));
+process.on('unhandledRejection', (err) => {
+  console.error('❌ UNHANDLED REJECTION! Shutting down...');
+  console.error('ERROR ORIGIN:', err.name, err.message);
+  if (process.env.NODE_ENV === 'development') {
+    console.error('ERROR STACK:', err.stack);
+  }
+  server.close(() => {
+    process.exit(1);
+  });
 });
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
-  console.error(`❌ UNCAUGHT EXCEPTION! Shutting down...`);
-  console.error(`ERROR ORIGIN: ${err.message}`);
-  server.close(() => process.exit(1));
+  console.error('❌ UNCAUGHT EXCEPTION! Shutting down...');
+  console.error('ERROR ORIGIN:', err.name, err.message);
+  if (process.env.NODE_ENV === 'development') {
+    console.error('ERROR STACK:', err.stack);
+  }
+  process.exit(1);
 });
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('👋 SIGTERM received. Shutting down gracefully...');
+  server.close(() => {
+    console.log('💤 Process terminated!');
+  });
+});
+console.log("PAYMOB_API_KEY:", process.env.PAYMOB_API_KEY);
+console.log("PAYMOB_PUBLIC_KEY:", process.env.PAYMOB_PUBLIC_KEY);
+console.log("PAYMOB_INTEGRATION_ID:", process.env.PAYMOB_INTEGRATION_ID);
+console.log("PAYMOB_IFRAME_ID:", process.env.PAYMOB_IFRAME_ID);
+console.log("PAYMOB_HMAC:", process.env.PAYMOB_HMAC);
+
+
+export default app;
+
+
