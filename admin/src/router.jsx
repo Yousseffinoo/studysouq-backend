@@ -7,6 +7,7 @@ import { Sections } from '@/pages/sections/Sections'
 import { Lessons } from '@/pages/lessons/Lessons'
 import { Notes } from '@/pages/notes/Notes'
 import { Questions } from '@/pages/questions/Questions'
+import Training from '@/pages/training/Training'
 import { Users } from '@/pages/users/Users'
 import { Payments } from '@/pages/payments/Payments'
 import { Pricing } from '@/pages/pricing/Pricing'
@@ -49,6 +50,10 @@ export const router = createBrowserRouter([
       {
         path: 'questions',
         element: <Questions />,
+      },
+      {
+        path: 'training',
+        element: <Training />,
       },
       {
         path: 'users',

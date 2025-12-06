@@ -19,6 +19,7 @@ import aiImageRoutes from './routes/aiImageRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import questionsRoutes from './routes/questions.routes.js';
+import trainingRoutes from './routes/training.routes.js';
 
 // Load environment variables
 dotenv.config();
@@ -163,6 +164,7 @@ app.use('/api/ai', aiImageRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/questions', questionsRoutes);
+app.use('/api/training', trainingRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {

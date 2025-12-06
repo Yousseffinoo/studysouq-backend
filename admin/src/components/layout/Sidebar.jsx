@@ -17,6 +17,7 @@ import {
   ChevronRight,
   LogOut,
   GraduationCap,
+  Brain,
 } from 'lucide-react'
 
 const navigation = [
@@ -26,6 +27,7 @@ const navigation = [
   { name: 'Lessons', href: '/lessons', icon: FileText },
   { name: 'Notes', href: '/notes', icon: StickyNote },
   { name: 'Questions', href: '/questions', icon: HelpCircle },
+  { name: 'AI Training', href: '/training', icon: Brain },
   { name: 'Users', href: '/users', icon: Users },
   { name: 'Payments', href: '/payments', icon: CreditCard },
   { name: 'Pricing', href: '/pricing', icon: DollarSign },

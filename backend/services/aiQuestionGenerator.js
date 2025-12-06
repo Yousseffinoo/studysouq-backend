@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import Question from '../models/Question.js';
 import Lesson from '../models/Lesson.js';
+import TrainingQuestion from '../models/TrainingQuestion.js';
 
 // Initialize OpenAI client (branded as Mathius)
 const openai = new OpenAI({
@@ -14,7 +15,84 @@ const MODELS = {
 };
 
 /**
- * Learn Edexcel style from existing questions in database
+ * Determine subject level from subject name
+ */
+function determineSubjectLevel(subjectName) {
+  const lower = (subjectName || '').toLowerCase();
+  if (lower.includes('o-level') || lower.includes('o level') || lower.includes('igcse')) {
+    return 'O-Level';
+  }
+  if (lower.includes('a2') || lower.includes('a2-level') || lower.includes('a2 level')) {
+    return 'A2-Level';
+  }
+  if (lower.includes('as') || lower.includes('as-level') || lower.includes('as level') || lower.includes('a-level') || lower.includes('a level')) {
+    return 'AS-Level';
+  }
+  return 'AS-Level'; // Default
+}
+
+/**
+ * Learn Edexcel style from TRAINING DATABASE (past papers)
+ */
+async function learnFromTrainingData(lessonTitle, subjectLevel, limit = 15) {
+  try {
+    // Search by lesson title/topic in training database
+    const trainingQuestions = await TrainingQuestion.find({
+      subjectLevel: subjectLevel,
+      $or: [
+        { lessonTitle: new RegExp(lessonTitle, 'i') },
+        { detectedTopics: { $in: [new RegExp(lessonTitle.split(' ')[0], 'i')] } },
+        { mathConcepts: { $in: [new RegExp(lessonTitle.split(' ')[0], 'i')] } }
+      ]
+    })
+    .limit(limit)
+    .lean();
+
+    if (trainingQuestions.length === 0) {
+      // Fallback: get random questions from this subject level
+      const fallbackQuestions = await TrainingQuestion.find({ subjectLevel })
+        .limit(5)
+        .lean();
+      return formatTrainingExamples(fallbackQuestions);
+    }
+
+    return formatTrainingExamples(trainingQuestions);
+  } catch (error) {
+    console.error('Error learning from training data:', error);
+    return null;
+  }
+}
+
+/**
+ * Format training questions for AI context
+ */
+function formatTrainingExamples(questions) {
+  if (!questions || questions.length === 0) return null;
+
+  return questions.map(q => {
+    let fullQuestion = q.questionText;
+    let fullAnswer = q.answerText || '';
+    
+    // Include subparts if available
+    if (q.subparts && q.subparts.length > 0) {
+      fullQuestion += '\n' + q.subparts.map(sp => `(${sp.label}) ${sp.questionText}`).join('\n');
+      fullAnswer = q.subparts.map(sp => `(${sp.label}) ${sp.answerText || ''}`).join('\n');
+    }
+    
+    return {
+      question: fullQuestion,
+      answer: fullAnswer,
+      marks: q.totalMarks,
+      difficulty: q.difficulty,
+      markschemeNotes: q.markschemeNotes || [],
+      paperCode: q.paperCode,
+      year: q.year
+    };
+  });
+}
+
+/**
+ * Learn Edexcel style from existing questions in database (legacy)
  */
 async function learnFromDatabase(lessonId, subject) {
   try {
@@ -47,18 +125,28 @@ async function learnFromDatabase(lessonId, subject) {
  * FAST: Generate Questions with Solutions in ONE call (Mathius Engine)
  */
 async function generateQuestionsWithSolutions(options) {
-  const { lesson, subject, difficulty, numberOfQuestions, existingExamples } = options;
+  const { lesson, subject, difficulty, numberOfQuestions, existingExamples, trainingExamples } = options;
 
   let examplesContext = '';
-  if (existingExamples && existingExamples.length > 0) {
+  
+  // Prioritize training data (past papers) over generic examples
+  const examples = trainingExamples || existingExamples;
+  
+  if (examples && examples.length > 0) {
+    const hasTrainingData = trainingExamples && trainingExamples.length > 0;
+    
     examplesContext = `
-LEARN FROM THESE EDEXCEL-STYLE EXAMPLES:
-${existingExamples.slice(0, 3).map((ex, i) => `
-Example ${i + 1}: ${ex.question}
-Answer: ${ex.answer}
-Marks: ${ex.marks}
+${hasTrainingData ? '📚 LEARNED FROM REAL EDEXCEL PAST PAPERS:' : 'EXAMPLE QUESTIONS:'}
+${examples.slice(0, 5).map((ex, i) => `
+------- EXAMPLE ${i + 1} ${ex.paperCode ? `(${ex.paperCode} ${ex.year})` : ''} -------
+QUESTION: ${ex.question}
+ANSWER: ${ex.answer}
+MARKS: ${ex.marks}${ex.markschemeNotes?.length > 0 ? `
+EXAMINER NOTES: ${ex.markschemeNotes.join('; ')}` : ''}
 `).join('\n')}
-Match this style exactly.
+-----------------------------------------
+
+CRITICAL: Match the EXACT style, wording patterns, mark allocation, and solution format from these real Edexcel questions.
 `;
   }
 
@@ -70,15 +158,16 @@ Subject: ${subject}
 ${examplesContext}
 
 REQUIREMENTS:
-1. Authentic Edexcel exam style questions
+1. Authentic Edexcel exam style questions (match the examples exactly)
 2. CRITICAL: ALL math MUST be wrapped in LaTeX delimiters:
    - Use $...$ for inline math (e.g., $x^2 + 5$)
    - Use $$...$$ for display/block math (e.g., $$\\frac{a}{b}$$)
    - NEVER write raw LaTeX without delimiters
    - Example: Write $\\binom{10}{3}$ NOT just \\binom{10}{3}
 3. Each question must have complete solution with ALL math in $ delimiters
-4. Difficulty-based marks: easy(1-2), medium(3-4), hard(5-8)
-5. Vary question types: calculations, applications, word problems
+4. Mark allocation must match Edexcel style: easy(1-2), medium(3-4), hard(5-8)
+5. Include examiner-style notes where appropriate
+6. Vary question types but maintain authentic exam feel
 
 OUTPUT JSON (strict format):
 {
@@ -92,7 +181,8 @@ OUTPUT JSON (strict format):
       "steps": [
         {"stepNumber": 1, "title": "Step title", "content": "Step content with LaTeX"}
       ],
-      "tips": ["Helpful tip 1", "Helpful tip 2"]
+      "tips": ["Helpful tip 1", "Helpful tip 2"],
+      "markingNotes": ["Examiner note 1"]
     }
   ]
 }
@@ -130,10 +220,25 @@ export async function generateQuestionsWithAI(options) {
     // Get lesson details
     const lesson = await Lesson.findById(lessonId).lean();
     const lessonTitle = lesson?.title || 'Mathematics';
+    
+    // Determine subject level for training data
+    const subjectLevel = determineSubjectLevel(subject);
+    console.log(`📊 Mathius: Subject level detected: ${subjectLevel}`);
 
-    // Quick database learning (parallel with nothing, just fast)
-    const existingExamples = await learnFromDatabase(lessonId, subject);
-    console.log(`📚 Mathius: Found ${existingExamples?.length || 0} examples to learn from`);
+    // PRIORITY 1: Learn from TRAINING DATABASE (past papers)
+    const trainingExamples = await learnFromTrainingData(lessonTitle, subjectLevel, 15);
+    console.log(`📚 Mathius: Found ${trainingExamples?.length || 0} past paper examples`);
+
+    // PRIORITY 2: Learn from existing questions (fallback)
+    let existingExamples = null;
+    if (!trainingExamples || trainingExamples.length < 3) {
+      existingExamples = await learnFromDatabase(lessonId, subject);
+      console.log(`📖 Mathius: Found ${existingExamples?.length || 0} additional examples`);
+    }
+
+    // Total examples for context
+    const totalExamples = (trainingExamples?.length || 0) + (existingExamples?.length || 0);
+    console.log(`📚 Mathius: Total ${totalExamples} examples to learn from`);
 
     // Single optimized API call for questions + solutions
     console.log('✨ Mathius: Generating questions...');
@@ -142,7 +247,8 @@ export async function generateQuestionsWithAI(options) {
       subject,
       difficulty,
       numberOfQuestions,
-      existingExamples
+      existingExamples,
+      trainingExamples
     });
 
     if (!result.success) {
@@ -163,7 +269,9 @@ export async function generateQuestionsWithAI(options) {
         generatedAt: new Date(),
         model: 'mathius',
         generationTime: elapsed,
-        learnedFromExamples: existingExamples?.length || 0
+        learnedFromPastPapers: trainingExamples?.length || 0,
+        learnedFromExamples: existingExamples?.length || 0,
+        subjectLevel
       }
     };
 
