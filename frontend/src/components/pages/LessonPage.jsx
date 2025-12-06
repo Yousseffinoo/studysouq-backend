@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ArrowLeft, Lock, BookOpen, Loader2, AlertCircle, Image as ImageIcon, Play, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Lock, BookOpen, Loader2, AlertCircle, Image as ImageIcon, Play, BarChart3, Brain, Zap, CheckCircle, PenTool, MessageCircle, ArrowRight } from 'lucide-react';
 import { getLessonById } from '../../services/publicService';
 import AITutorChat from '../AITutorChat';
 import MarkdownViewer from '../MarkdownViewer';
@@ -289,49 +289,51 @@ export default function LessonPage() {
         }} transition={{
           duration: 0.6,
           delay: 0.4
-        }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* AI Quiz System */}
+        }}>
+            {/* Practice Questions with Mathius AI */}
             <Link to={`/quiz/${lessonId}`} className="block group">
-              <div className="bg-black border-2 border-white/20 p-6 hover:border-white transition-all duration-300 h-full">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-blue-500/20 rounded">
-                    <Play className="w-6 h-6 text-blue-400" />
+              <div className="bg-black border-2 border-purple-500/50 p-8 hover:border-purple-500 hover:bg-purple-500/5 transition-all duration-300">
+                <div className="flex items-start gap-6">
+                  <div className="p-4 bg-gradient-to-br from-purple-500/30 to-blue-500/30 rounded-lg">
+                    <Brain className="w-8 h-8 text-purple-400" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold mb-2 group-hover:text-blue-400 transition-colors">
-                      AI-Powered Quiz
-                    </h3>
-                    <p className="text-white/70 text-sm">
-                      Practice with instant AI feedback, draw your answers, or upload your work
+                    <div className="flex items-center gap-3 mb-3">
+                      <h3 className="text-2xl font-bold group-hover:text-purple-400 transition-colors">
+                        Practice Questions
+                      </h3>
+                      <span className="px-3 py-1 bg-purple-500/20 text-purple-400 text-xs font-bold border border-purple-500/30">
+                        MATHIUS AI
+                      </span>
+                    </div>
+                    <p className="text-white/80 text-base mb-4">
+                      Infinite AI-generated questions tailored to this lesson. Get instant feedback, step-by-step explanations, and improve with every answer.
                     </p>
-                    <div className="flex items-center gap-2 mt-3">
-                      <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs">AI Checking</span>
-                      <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs">Step-by-step</span>
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                      <div className="flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-yellow-400" />
+                        <span className="text-white/70 text-sm">AI Checking</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-400" />
+                        <span className="text-white/70 text-sm">Step-by-step</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <PenTool className="w-4 h-4 text-blue-400" />
+                        <span className="text-white/70 text-sm">Draw Answers</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MessageCircle className="w-4 h-4 text-purple-400" />
+                        <span className="text-white/70 text-sm">AI Tutor Help</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="px-3 py-1.5 bg-blue-500/20 text-blue-400 border border-blue-500/30">1-30 Questions</span>
+                      <span className="px-3 py-1.5 bg-green-500/20 text-green-400 border border-green-500/30">All Difficulties</span>
+                      <span className="px-3 py-1.5 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">Instant Feedback</span>
                     </div>
                   </div>
-                </div>
-              </div>
-            </Link>
-
-            {/* Traditional Questions */}
-            <Link to={`/lesson/${lessonId}/questions`} className="block group">
-              <div className="bg-black border-2 border-white/20 p-6 hover:border-white transition-all duration-300 h-full">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-purple-500/20 rounded">
-                    <BookOpen className="w-6 h-6 text-purple-400" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold mb-2 group-hover:text-purple-400 transition-colors">
-                      Practice Questions
-                    </h3>
-                    <p className="text-white/70 text-sm">
-                      Browse and study all available practice problems for this lesson
-                    </p>
-                    <div className="flex items-center gap-2 mt-3">
-                      <span className="px-2 py-1 bg-purple-500/20 text-purple-400 text-xs">Past Papers</span>
-                      <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs">All Levels</span>
-                    </div>
-                  </div>
+                  <ArrowRight className="w-6 h-6 text-white/30 group-hover:text-purple-400 group-hover:translate-x-1 transition-all flex-shrink-0 mt-2" />
                 </div>
               </div>
             </Link>

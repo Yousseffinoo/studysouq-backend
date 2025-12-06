@@ -1,18 +1,22 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Pencil, Eraser, RotateCcw, Download, Palette } from 'lucide-react';
+import { Pencil, Eraser, RotateCcw, Download, Palette, ChevronUp, ChevronDown } from 'lucide-react';
 
 const COLORS = ['#000000', '#2563eb', '#dc2626', '#16a34a', '#9333ea', '#ea580c'];
 const BRUSH_SIZES = [2, 4, 6, 8, 12];
+const INITIAL_HEIGHT = 600;
+const HEIGHT_INCREMENT = 600; // Add 600px each time
 
-export default function DrawingCanvas({ onSave, width = 800, height = 500 }) {
+export default function DrawingCanvas({ onSave, width = 800 }) {
   const canvasRef = useRef(null);
+  const containerRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [tool, setTool] = useState('pencil'); // 'pencil' or 'eraser'
+  const [tool, setTool] = useState('pencil');
   const [color, setColor] = useState('#000000');
   const [brushSize, setBrushSize] = useState(4);
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [canvasHeight, setCanvasHeight] = useState(INITIAL_HEIGHT);
 
   // Initialize canvas
   useEffect(() => {
@@ -25,9 +29,33 @@ export default function DrawingCanvas({ onSave, width = 800, height = 500 }) {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    // Save initial state
     saveToHistory();
   }, []);
+
+  // Extend canvas when it changes height
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    // Save current drawing
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height - HEIGHT_INCREMENT;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.drawImage(canvas, 0, 0);
+
+    // Resize main canvas
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Restore previous drawing
+    ctx.drawImage(tempCanvas, 0, 0);
+    
+    // Reset drawing settings
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+  }, [canvasHeight]);
 
   const saveToHistory = useCallback(() => {
     const canvas = canvasRef.current;
@@ -117,17 +145,41 @@ export default function DrawingCanvas({ onSave, width = 800, height = 500 }) {
     const img = new Image();
     img.onload = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
     };
     img.src = history[historyIndex - 1];
     setHistoryIndex(prev => prev - 1);
   };
 
+  const addMorePaper = () => {
+    setCanvasHeight(prev => prev + HEIGHT_INCREMENT);
+    
+    // Auto-scroll to the new area
+    setTimeout(() => {
+      if (containerRef.current) {
+        containerRef.current.scrollTop = containerRef.current.scrollHeight;
+      }
+    }, 100);
+  };
+
+  const scrollToTop = () => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const scrollToBottom = () => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
+    }
+  };
+
   const saveCanvas = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Convert to blob
     canvas.toBlob((blob) => {
       if (blob && onSave) {
         onSave(blob);
@@ -232,22 +284,54 @@ export default function DrawingCanvas({ onSave, width = 800, height = 500 }) {
         </div>
       </div>
 
-      {/* Canvas */}
-      <div className="border-2 border-white/20 overflow-hidden">
-        <canvas
-          ref={canvasRef}
-          width={width}
-          height={height}
-          className="w-full cursor-crosshair touch-none bg-white"
-          onMouseDown={startDrawing}
-          onMouseMove={draw}
-          onMouseUp={stopDrawing}
-          onMouseLeave={stopDrawing}
-          onTouchStart={startDrawing}
-          onTouchMove={draw}
-          onTouchEnd={stopDrawing}
-        />
+      {/* Canvas Container with Scroll */}
+      <div className="relative">
+        <div 
+          ref={containerRef}
+          className="border-2 border-white/20 overflow-y-auto bg-white"
+          style={{ maxHeight: '600px', position: 'relative' }}
+        >
+          <canvas
+            ref={canvasRef}
+            width={width}
+            height={canvasHeight}
+            className="w-full cursor-crosshair touch-none bg-white"
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            onMouseLeave={stopDrawing}
+            onTouchStart={startDrawing}
+            onTouchMove={draw}
+            onTouchEnd={stopDrawing}
+          />
+        </div>
+
+        {/* Scroll Controls */}
+        <div className="absolute right-2 top-2 flex flex-col gap-1">
+          <button
+            onClick={scrollToTop}
+            className="p-1.5 bg-black/70 hover:bg-black border border-white/30 text-white rounded"
+            title="Scroll to top"
+          >
+            <ChevronUp className="w-4 h-4" />
+          </button>
+          <button
+            onClick={scrollToBottom}
+            className="p-1.5 bg-black/70 hover:bg-black border border-white/30 text-white rounded"
+            title="Scroll to bottom"
+          >
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        </div>
       </div>
+
+      {/* Add More Paper Button */}
+      <button
+        onClick={addMorePaper}
+        className="w-full mt-2 py-2 border-2 border-white/30 text-white hover:border-white/60 text-sm transition-all"
+      >
+        + Add More Paper ({Math.round(canvasHeight / HEIGHT_INCREMENT)} sheets)
+      </button>
 
       {/* Save Button */}
       <motion.button
@@ -261,4 +345,3 @@ export default function DrawingCanvas({ onSave, width = 800, height = 500 }) {
     </div>
   );
 }
-

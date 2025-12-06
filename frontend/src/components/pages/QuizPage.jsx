@@ -378,13 +378,22 @@ export default function QuizPage() {
             </div>
 
             <div className="mb-6">
-              <label className="block text-white mb-2">Number of Questions</label>
-              <div className="flex gap-2">
-                {[3, 5, 10].map((num) => (
-                  <button key={num} onClick={() => setNumberOfQuestions(num)} className={`flex-1 py-3 border-2 transition-all ${numberOfQuestions === num ? 'bg-white text-black border-white' : 'border-white/30 text-white hover:border-white/60'}`}>
-                    {num}
-                  </button>
-                ))}
+              <label className="block text-white mb-3">Number of Questions: <span className="font-bold">{numberOfQuestions}</span></label>
+              <input
+                type="range"
+                min="1"
+                max="30"
+                value={numberOfQuestions}
+                onChange={(e) => setNumberOfQuestions(parseInt(e.target.value))}
+                className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white slider"
+                style={{
+                  background: `linear-gradient(to right, white 0%, white ${((numberOfQuestions - 1) / 29) * 100}%, rgba(255,255,255,0.2) ${((numberOfQuestions - 1) / 29) * 100}%, rgba(255,255,255,0.2) 100%)`
+                }}
+              />
+              <div className="flex justify-between text-white/50 text-sm mt-2">
+                <span>1</span>
+                <span>15</span>
+                <span>30</span>
               </div>
             </div>
 

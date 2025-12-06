@@ -78,11 +78,14 @@ export default function MocksPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get('/public/subjects');
-        if (response.data.success) {
-          setSubjects(response.data.data.subjects || []);
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/public/subjects`);
+        const data = await response.json();
+        console.log('Subjects response:', data);
+        if (data.success) {
+          setSubjects(data.data?.subjects || data.data || []);
         }
       } catch (err) {
+        console.error('Load subjects error:', err);
         setError('Failed to load subjects');
       } finally {
         setLoading(false);
@@ -98,12 +101,12 @@ export default function MocksPage() {
         return;
       }
       try {
-        const response = await api.get(`/public/subjects/${selectedSubject}/lessons`);
-        if (response.data.success) {
-          setLessons(response.data.data || []);
-        }
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/public/subjects/${selectedSubject}/lessons`);
+        const data = await response.json();
+        console.log('Lessons response:', data);
+        setLessons(data.data || []);
       } catch (err) {
-        console.error('Failed to fetch lessons');
+        console.error('Failed to fetch lessons:', err);
       }
     };
     fetchLessons();
@@ -455,19 +458,22 @@ export default function MocksPage() {
             {/* Questions & Difficulty */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
-                <label className="block text-white mb-2">Number of Questions</label>
-                <div className="flex gap-2">
-                  {[10, 20, 30, 50].map((num) => (
-                    <button
-                      key={num}
-                      onClick={() => setNumberOfQuestions(num)}
-                      className={`flex-1 py-2 border-2 transition-all text-sm ${
-                        numberOfQuestions === num ? 'bg-white text-black border-white' : 'border-white/30 text-white hover:border-white/60'
-                      }`}
-                    >
-                      {num}
-                    </button>
-                  ))}
+                <label className="block text-white mb-3">Number of Questions: <span className="font-bold">{numberOfQuestions}</span></label>
+                <input
+                  type="range"
+                  min="1"
+                  max="50"
+                  value={numberOfQuestions}
+                  onChange={(e) => setNumberOfQuestions(parseInt(e.target.value))}
+                  className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white slider"
+                  style={{
+                    background: `linear-gradient(to right, white 0%, white ${((numberOfQuestions - 1) / 49) * 100}%, rgba(255,255,255,0.2) ${((numberOfQuestions - 1) / 49) * 100}%, rgba(255,255,255,0.2) 100%)`
+                  }}
+                />
+                <div className="flex justify-between text-white/50 text-sm mt-2">
+                  <span>1</span>
+                  <span>25</span>
+                  <span>50</span>
                 </div>
               </div>
               <div>
