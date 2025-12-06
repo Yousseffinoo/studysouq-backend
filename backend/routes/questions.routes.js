@@ -2,8 +2,9 @@ import express from 'express';
 import { protect, admin } from '../middleware/auth.js';
 import {
   generateQuestionsForStudent,
-  startAIQuizSession,
+  generateMockExamQuestions,
   submitAIAnswer,
+  tutorChat,
   uploadPastPaperPDF,
   uploadMarkschemePDF,
   savePastPaperQuestions,
@@ -18,10 +19,13 @@ import {
 
 const router = express.Router();
 
-// Student Routes
+// Student Routes - AI Generation
 router.post('/generate', protect, generateQuestionsForStudent);
-router.post('/session/start', protect, startAIQuizSession);
+router.post('/mock-exam', protect, generateMockExamQuestions);
 router.post('/submit', protect, submitAIAnswer);
+router.post('/tutor-chat', protect, tutorChat);
+
+// Student Routes - Data
 router.get('/by-lesson/:lessonId', protect, getQuestionsByLesson);
 router.get('/progress', protect, getStudentProgress);
 router.get('/recommendations', protect, getRecommendations);

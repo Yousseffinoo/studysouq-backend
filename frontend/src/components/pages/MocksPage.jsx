@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
@@ -7,49 +7,46 @@ import {
   CheckCircle,
   Trophy,
   XCircle,
-  Sparkles,
-  Loader2,
   Brain,
   Zap,
   ChevronRight,
   ChevronLeft,
-  Eye,
   Send,
-  RefreshCw,
+  Loader2,
+  BookOpen,
+  Check,
   MessageCircle,
-  X
+  X,
+  Eye,
+  Clock,
+  Target
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import MarkdownViewer from '../MarkdownViewer';
-import { getLessonById } from '../../services/publicService';
 import api from '../../config/api';
 
-const DIFFICULTIES = [
-  { value: 'easy', label: 'Easy', color: 'text-green-400', bg: 'bg-green-500/20 border-green-500/50' },
-  { value: 'medium', label: 'Medium', color: 'text-yellow-400', bg: 'bg-yellow-500/20 border-yellow-500/50' },
-  { value: 'hard', label: 'Hard', color: 'text-red-400', bg: 'bg-red-500/20 border-red-500/50' },
-];
-
-export default function QuizPage() {
-  const { lessonId } = useParams();
+export default function MocksPage() {
   const navigate = useNavigate();
   const { user, token } = useAuth();
 
   // States
-  const [lesson, setLesson] = useState(null);
+  const [subjects, setSubjects] = useState([]);
+  const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Quiz config
+  // Config
   const [showConfig, setShowConfig] = useState(true);
-  const [numberOfQuestions, setNumberOfQuestions] = useState(5);
-  const [difficulty, setDifficulty] = useState('medium');
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedLessons, setSelectedLessons] = useState([]);
+  const [numberOfQuestions, setNumberOfQuestions] = useState(20);
+  const [difficulty, setDifficulty] = useState('mixed');
 
-  // AI Generation
+  // Generation
   const [generating, setGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState('');
 
-  // Quiz state
+  // Mock exam state
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -58,67 +55,111 @@ export default function QuizPage() {
   const [showResults, setShowResults] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [userAnswer, setUserAnswer] = useState('');
+  const [timeElapsed, setTimeElapsed] = useState(0);
 
-  // Mathius Tutor Chat
+  // Tutor
   const [showTutor, setShowTutor] = useState(false);
   const [tutorMessages, setTutorMessages] = useState([]);
   const [tutorInput, setTutorInput] = useState('');
   const [tutorLoading, setTutorLoading] = useState(false);
   const chatEndRef = useRef(null);
 
+  // Timer
+  useEffect(() => {
+    let interval;
+    if (startTime && !showResults) {
+      interval = setInterval(() => {
+        setTimeElapsed(Math.floor((Date.now() - startTime) / 1000));
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [startTime, showResults]);
+
   useEffect(() => {
     const fetchData = async () => {
-      if (!lessonId) return;
-      setLoading(true);
       try {
-        const lessonResult = await getLessonById(lessonId);
-        if (lessonResult.success) {
-          setLesson(lessonResult.data);
-        } else {
-          setError('Lesson not found');
+        const response = await api.get('/public/subjects');
+        if (response.data.success) {
+          setSubjects(response.data.data.subjects || []);
         }
       } catch (err) {
-        setError('Failed to load quiz');
+        setError('Failed to load subjects');
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [lessonId]);
+  }, []);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [tutorMessages]);
+    const fetchLessons = async () => {
+      if (!selectedSubject) {
+        setLessons([]);
+        return;
+      }
+      try {
+        const response = await api.get(`/public/subjects/${selectedSubject}/lessons`);
+        if (response.data.success) {
+          setLessons(response.data.data || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch lessons');
+      }
+    };
+    fetchLessons();
+    setSelectedLessons([]);
+  }, [selectedSubject]);
 
-  const handleStartQuiz = async () => {
+  const toggleLesson = (lessonId) => {
+    setSelectedLessons(prev => 
+      prev.includes(lessonId) 
+        ? prev.filter(id => id !== lessonId)
+        : [...prev, lessonId]
+    );
+  };
+
+  const selectAllLessons = () => {
+    if (selectedLessons.length === lessons.length) {
+      setSelectedLessons([]);
+    } else {
+      setSelectedLessons(lessons.map(l => l._id));
+    }
+  };
+
+  const handleStartMock = async () => {
     if (!user || !token) {
-      navigate('/login', { state: { from: `/quiz/${lessonId}` } });
+      navigate('/login', { state: { from: '/mocks' } });
+      return;
+    }
+
+    if (selectedLessons.length === 0) {
+      setError('Please select at least one lesson');
       return;
     }
 
     setGenerating(true);
     setError(null);
-    setGenerationStatus('🧠 Mathius is preparing your questions...');
+    setGenerationStatus('🧠 Mathius is preparing your mock exam...');
 
     try {
-      const response = await api.post('/questions/generate', {
-        lessonId,
-        difficulty,
-        numberOfQuestions
+      const response = await api.post('/questions/mock-exam', {
+        lessonIds: selectedLessons,
+        numberOfQuestions,
+        difficulty
       });
 
       if (response.data.success) {
-        setQuestions(response.data.data.questions);
+        setQuestions(response.data.data.data);
         setShowConfig(false);
         setCurrentIndex(0);
         setAnswers({});
         setStartTime(Date.now());
         setUserAnswer('');
       } else {
-        setError(response.data.message || 'Failed to generate questions');
+        setError(response.data.message || 'Failed to generate mock exam');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Mathius is temporarily unavailable. Please try again.');
+      setError(err.response?.data?.message || 'Mathius is temporarily unavailable.');
     } finally {
       setGenerating(false);
     }
@@ -133,10 +174,10 @@ export default function QuizPage() {
       
       const response = await api.post('/questions/submit', {
         questionIndex: currentIndex,
-        question: question,
+        question,
         answerText: userAnswer,
         answerType: 'text',
-        lessonId
+        lessonId: question.lessonId
       });
 
       if (response.data.success) {
@@ -191,6 +232,7 @@ export default function QuizPage() {
   };
 
   const handleComplete = () => setShowResults(true);
+
   const handleRetry = () => {
     setShowConfig(true);
     setShowResults(false);
@@ -199,12 +241,11 @@ export default function QuizPage() {
     setCurrentIndex(0);
     setShowAnswer(false);
     setUserAnswer('');
+    setTimeElapsed(0);
   };
 
-  // Mathius Tutor Chat
   const sendTutorMessage = async () => {
     if (!tutorInput.trim() || tutorLoading) return;
-
     const userMessage = { role: 'user', content: tutorInput };
     setTutorMessages(prev => [...prev, userMessage]);
     setTutorInput('');
@@ -215,22 +256,24 @@ export default function QuizPage() {
         message: tutorInput,
         context: {
           currentQuestion: questions[currentIndex]?.questionText,
-          lessonTopic: lesson?.title,
+          lessonTopic: questions[currentIndex]?.lessonTitle,
           previousMessages: tutorMessages.slice(-6)
         }
       });
-
       if (response.data.success) {
         setTutorMessages(prev => [...prev, response.data.data]);
       }
     } catch (err) {
-      setTutorMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: "I'm having trouble connecting. Please try again!" 
-      }]);
+      setTutorMessages(prev => [...prev, { role: 'assistant', content: "I'm having trouble. Please try again!" }]);
     } finally {
       setTutorLoading(false);
     }
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const calculateResults = () => {
@@ -251,7 +294,7 @@ export default function QuizPage() {
       accuracy: Object.keys(answers).length > 0 ? Math.round((correct / Object.keys(answers).length) * 100) : 0,
       marksAwarded: awardedMarks,
       totalMarks,
-      timeSpent: startTime ? Math.floor((Date.now() - startTime) / 1000) : 0
+      timeSpent: timeElapsed
     };
   };
 
@@ -263,34 +306,21 @@ export default function QuizPage() {
     );
   }
 
-  if (error && !generating) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center max-w-md px-4">
-          <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <p className="text-white text-xl mb-4">{error}</p>
-          <button onClick={() => { setError(null); setShowConfig(true); }} className="px-6 py-3 bg-white text-black font-semibold hover:bg-white/90 mr-4">
-            Try Again
-          </button>
-          <button onClick={() => navigate(-1)} className="px-6 py-3 border-2 border-white/30 text-white hover:border-white/60">
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Results Screen
+  // Results
   if (showResults) {
     const results = calculateResults();
+    const grade = results.accuracy >= 90 ? 'A*' : results.accuracy >= 80 ? 'A' : results.accuracy >= 70 ? 'B' : results.accuracy >= 60 ? 'C' : results.accuracy >= 50 ? 'D' : 'E';
+
     return (
       <div className="min-h-screen bg-black pt-24 pb-12 px-4">
         <div className="max-w-2xl mx-auto">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-black border-2 border-white/20 p-8">
             <div className="text-center mb-8">
               <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-              <h1 className="text-3xl font-bold text-white mb-2">Practice Complete!</h1>
-              <p className="text-white/70">{lesson?.title}</p>
+              <h1 className="text-3xl font-bold text-white mb-2">Mock Exam Complete!</h1>
+              <div className="inline-block px-6 py-2 bg-white text-black text-2xl font-bold mt-2">
+                Grade: {grade}
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4 mb-8">
               <div className="bg-white/5 p-4 border-2 border-white/10">
@@ -302,22 +332,21 @@ export default function QuizPage() {
                 <p className="text-2xl font-bold text-white">{results.accuracy}%</p>
               </div>
               <div className="bg-white/5 p-4 border-2 border-white/10">
-                <p className="text-white/50 text-sm mb-1">Marks</p>
-                <p className="text-2xl font-bold text-blue-400">{results.marksAwarded} / {results.totalMarks}</p>
+                <p className="text-white/50 text-sm mb-1">Total Time</p>
+                <p className="text-2xl font-bold text-blue-400">{formatTime(results.timeSpent)}</p>
               </div>
               <div className="bg-white/5 p-4 border-2 border-white/10">
-                <p className="text-white/50 text-sm mb-1">Time</p>
-                <p className="text-2xl font-bold text-purple-400">{Math.floor(results.timeSpent / 60)}m {results.timeSpent % 60}s</p>
+                <p className="text-white/50 text-sm mb-1">Marks</p>
+                <p className="text-2xl font-bold text-purple-400">{results.marksAwarded} / {results.totalMarks}</p>
               </div>
             </div>
-            <div className={`p-4 mb-8 border-2 ${results.accuracy >= 80 ? 'bg-green-500/10 border-green-500/30' : results.accuracy >= 60 ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-              <p className={`text-lg ${results.accuracy >= 80 ? 'text-green-400' : results.accuracy >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
-                {results.accuracy >= 80 ? '🎉 Excellent! You\'ve mastered this topic!' : results.accuracy >= 60 ? '👍 Good effort! Keep practicing!' : '💪 Review the material and try again.'}
-              </p>
-            </div>
             <div className="flex gap-4">
-              <button onClick={handleRetry} className="flex-1 py-3 border-2 border-white/30 text-white hover:border-white/60">Try Again</button>
-              <button onClick={() => navigate(`/lesson/${lessonId}`)} className="flex-1 py-3 bg-white text-black font-semibold hover:bg-white/90">Back to Lesson</button>
+              <button onClick={handleRetry} className="flex-1 py-3 border-2 border-white/30 text-white hover:border-white/60">
+                New Mock Exam
+              </button>
+              <button onClick={() => navigate('/progress')} className="flex-1 py-3 bg-white text-black font-semibold hover:bg-white/90">
+                View Progress
+              </button>
             </div>
           </motion.div>
         </div>
@@ -325,7 +354,7 @@ export default function QuizPage() {
     );
   }
 
-  // AI Generation Loading
+  // Generation Loading
   if (generating) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -336,74 +365,140 @@ export default function QuizPage() {
               <Zap className="w-8 h-8 text-yellow-400" />
             </motion.div>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-4">Mathius is Working</h2>
-          <p className="text-white/70 mb-6">{generationStatus}</p>
-          <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
-            <motion.div className="h-full bg-gradient-to-r from-purple-500 to-blue-500" initial={{ width: '0%' }} animate={{ width: '100%' }} transition={{ duration: 8 }} />
+          <h2 className="text-2xl font-bold text-white mb-4">Creating Your Mock Exam</h2>
+          <p className="text-white/70 mb-2">{generationStatus}</p>
+          <p className="text-white/50 text-sm">Generating {numberOfQuestions} questions from {selectedLessons.length} topics...</p>
+          <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden mt-6">
+            <motion.div className="h-full bg-gradient-to-r from-purple-500 to-blue-500" initial={{ width: '0%' }} animate={{ width: '100%' }} transition={{ duration: 15 }} />
           </div>
         </motion.div>
       </div>
     );
   }
 
-  // Configuration Screen
+  // Configuration
   if (showConfig) {
     return (
       <div className="min-h-screen bg-black pt-24 pb-12 px-4">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-white/70 hover:text-white mb-8">
-            <ArrowLeft className="w-5 h-5" /> Back to Lesson
+            <ArrowLeft className="w-5 h-5" /> Back
           </button>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-black border-2 border-white/20 p-8">
             <div className="flex items-center gap-4 mb-8">
               <div className="relative">
-                <Brain className="w-10 h-10 text-white" />
-                <Sparkles className="w-4 h-4 text-yellow-400 absolute -top-1 -right-1" />
+                <Target className="w-10 h-10 text-white" />
+                <Zap className="w-4 h-4 text-yellow-400 absolute -top-1 -right-1" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Practice Questions</h1>
-                <p className="text-white/70">{lesson?.title}</p>
+                <h1 className="text-2xl font-bold text-white">Mock Exam</h1>
+                <p className="text-white/70">Test yourself across multiple topics</p>
               </div>
             </div>
 
-            <div className="mb-8 p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-2 border-purple-500/30">
-              <div className="flex items-start gap-3">
-                <Zap className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-white font-medium">Powered by Mathius AI</p>
-                  <p className="text-white/60 text-sm">Questions generated specifically for this topic using our advanced AI tutor.</p>
+            {error && (
+              <div className="mb-6 p-4 bg-red-500/10 border-2 border-red-500/30 text-red-400">
+                {error}
+              </div>
+            )}
+
+            {/* Subject Selection */}
+            <div className="mb-6">
+              <label className="block text-white mb-2">Select Subject</label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {subjects.map((s) => (
+                  <button
+                    key={s._id}
+                    onClick={() => setSelectedSubject(s.slug)}
+                    className={`p-3 border-2 text-left transition-all ${
+                      selectedSubject === s.slug ? 'bg-white text-black border-white' : 'border-white/30 text-white hover:border-white/60'
+                    }`}
+                  >
+                    <p className="font-medium">{s.name}</p>
+                    <p className={`text-xs ${selectedSubject === s.slug ? 'text-black/70' : 'text-white/50'}`}>{s.level}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Lesson Selection */}
+            {selectedSubject && lessons.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-white">Select Topics ({selectedLessons.length} selected)</label>
+                  <button onClick={selectAllLessons} className="text-sm text-purple-400 hover:text-purple-300">
+                    {selectedLessons.length === lessons.length ? 'Deselect All' : 'Select All'}
+                  </button>
+                </div>
+                <div className="max-h-60 overflow-y-auto border-2 border-white/20 p-2 space-y-1">
+                  {lessons.map((l) => (
+                    <button
+                      key={l._id}
+                      onClick={() => toggleLesson(l._id)}
+                      className={`w-full p-3 flex items-center gap-3 text-left transition-all ${
+                        selectedLessons.includes(l._id) ? 'bg-purple-500/20 border border-purple-500/50' : 'hover:bg-white/5'
+                      }`}
+                    >
+                      <div className={`w-5 h-5 border-2 flex items-center justify-center ${
+                        selectedLessons.includes(l._id) ? 'border-purple-500 bg-purple-500' : 'border-white/30'
+                      }`}>
+                        {selectedLessons.includes(l._id) && <Check className="w-3 h-3 text-white" />}
+                      </div>
+                      <span className="text-white">{l.title}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Questions & Difficulty */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="block text-white mb-2">Number of Questions</label>
+                <div className="flex gap-2">
+                  {[10, 20, 30, 50].map((num) => (
+                    <button
+                      key={num}
+                      onClick={() => setNumberOfQuestions(num)}
+                      className={`flex-1 py-2 border-2 transition-all text-sm ${
+                        numberOfQuestions === num ? 'bg-white text-black border-white' : 'border-white/30 text-white hover:border-white/60'
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-white mb-2">Difficulty</label>
+                <div className="flex gap-2">
+                  {['mixed', 'easy', 'medium', 'hard'].map((d) => (
+                    <button
+                      key={d}
+                      onClick={() => setDifficulty(d)}
+                      className={`flex-1 py-2 border-2 transition-all text-sm capitalize ${
+                        difficulty === d ? 'bg-white text-black border-white' : 'border-white/30 text-white hover:border-white/60'
+                      }`}
+                    >
+                      {d}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
 
-            <div className="mb-6">
-              <label className="block text-white mb-2">Number of Questions</label>
-              <div className="flex gap-2">
-                {[3, 5, 10].map((num) => (
-                  <button key={num} onClick={() => setNumberOfQuestions(num)} className={`flex-1 py-3 border-2 transition-all ${numberOfQuestions === num ? 'bg-white text-black border-white' : 'border-white/30 text-white hover:border-white/60'}`}>
-                    {num}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <label className="block text-white mb-2">Difficulty</label>
-              <div className="grid grid-cols-3 gap-2">
-                {DIFFICULTIES.map((d) => (
-                  <button key={d.value} onClick={() => setDifficulty(d.value)} className={`p-4 border-2 text-center transition-all ${difficulty === d.value ? 'bg-white text-black border-white' : 'border-white/30 text-white hover:border-white/60'}`}>
-                    <p className={`font-bold ${difficulty === d.value ? 'text-black' : d.color}`}>{d.label}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleStartQuiz} className="w-full py-4 bg-white text-black font-bold text-lg hover:bg-white/90 flex items-center justify-center gap-2">
-              <Play className="w-5 h-5" /> Start Practice
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleStartMock}
+              disabled={selectedLessons.length === 0}
+              className="w-full py-4 bg-white text-black font-bold text-lg hover:bg-white/90 disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <Play className="w-5 h-5" /> Start Mock Exam
             </motion.button>
 
-            {!user && <p className="text-center text-white/50 mt-4 text-sm">You'll need to log in to start</p>}
+            {!user && <p className="text-center text-white/50 mt-4 text-sm">You'll need to log in</p>}
           </motion.div>
         </div>
       </div>
@@ -421,12 +516,16 @@ export default function QuizPage() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <button onClick={handleRetry} className="flex items-center gap-2 text-white/70 hover:text-white">
+            <button onClick={() => { if (confirm('Exit mock exam?')) handleRetry(); }} className="flex items-center gap-2 text-white/70 hover:text-white">
               <ArrowLeft className="w-5 h-5" /> Exit
             </button>
             <div className="flex items-center gap-4">
-              <span className="text-white/70">Question {currentIndex + 1} of {questions.length}</span>
-              <button onClick={() => setShowTutor(true)} className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/20 border border-purple-500/50 text-purple-400 hover:bg-purple-500/30 transition-colors" title="Ask Mathius for help">
+              <div className="flex items-center gap-2 text-white/70">
+                <Clock className="w-4 h-4" />
+                <span className="font-mono">{formatTime(timeElapsed)}</span>
+              </div>
+              <span className="text-white/70">Q{currentIndex + 1}/{questions.length}</span>
+              <button onClick={() => setShowTutor(true)} className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/20 border border-purple-500/50 text-purple-400 hover:bg-purple-500/30">
                 <MessageCircle className="w-4 h-4" />
                 <span className="text-sm">Help</span>
               </button>
@@ -438,19 +537,26 @@ export default function QuizPage() {
             <div className="h-full bg-white transition-all" style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }} />
           </div>
 
-          {/* Question Card */}
+          {/* Question */}
           <motion.div key={currentIndex} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-black border-2 border-white/20 p-6 md:p-8 mb-6">
-            {/* Badge */}
-            <div className="flex items-center gap-3 mb-6">
-              <span className={`px-3 py-1 text-sm font-medium border-2 ${DIFFICULTIES.find(d => d.value === question.difficulty)?.bg || 'border-white/30'}`}>
+            <div className="flex items-center gap-3 mb-6 flex-wrap">
+              <span className={`px-3 py-1 text-sm font-medium border-2 ${
+                question.difficulty === 'easy' ? 'border-green-500/50 text-green-400 bg-green-500/10' :
+                question.difficulty === 'hard' ? 'border-red-500/50 text-red-400 bg-red-500/10' :
+                'border-yellow-500/50 text-yellow-400 bg-yellow-500/10'
+              }`}>
                 {question.difficulty?.toUpperCase()}
               </span>
               <span className="text-white/50">|</span>
               <span className="text-white/70">{question.marks} mark{question.marks > 1 ? 's' : ''}</span>
-              <span className="ml-auto px-2 py-1 bg-purple-500/20 text-purple-400 text-xs border border-purple-500/30">Mathius AI</span>
+              {question.lessonTitle && (
+                <>
+                  <span className="text-white/50">|</span>
+                  <span className="text-purple-400 text-sm">{question.lessonTitle}</span>
+                </>
+              )}
             </div>
 
-            {/* Question */}
             <div className="prose prose-invert max-w-none mb-8">
               <MarkdownViewer content={question.questionText} />
             </div>
@@ -461,100 +567,42 @@ export default function QuizPage() {
                 <textarea
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
-                  placeholder="Type your answer here... (Use $...$ for math notation)"
+                  placeholder="Type your answer... (Use $...$ for math)"
                   className="w-full h-32 bg-black border-2 border-white/30 p-4 text-white placeholder-white/30 focus:border-white focus:outline-none resize-none"
                 />
                 <div className="flex gap-3">
                   <button onClick={handleSubmitAnswer} disabled={!userAnswer.trim() || submitting} className="flex-1 py-3 bg-white text-black font-semibold hover:bg-white/90 disabled:opacity-50 flex items-center justify-center gap-2">
-                    {submitting ? <><Loader2 className="w-5 h-5 animate-spin" /> Mathius is checking...</> : <><Send className="w-5 h-5" /> Submit Answer</>}
+                    {submitting ? <><Loader2 className="w-5 h-5 animate-spin" /> Checking...</> : <><Send className="w-5 h-5" /> Submit</>}
                   </button>
                   <button onClick={handleShowAnswer} className="px-6 py-3 border-2 border-white/30 text-white hover:border-white/60 flex items-center gap-2">
-                    <Eye className="w-5 h-5" /> Reveal
+                    <Eye className="w-5 h-5" /> Skip
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Answer Revealed */}
+            {/* Answer Display */}
             {(showAnswer || hasAnswered) && currentAnswer && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="border-t-2 border-white/10 pt-6 space-y-6">
-                {/* Result */}
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="border-t-2 border-white/10 pt-6 space-y-4">
                 {currentAnswer.result?.isCorrect !== null && (
                   <div className={`p-4 border-2 ${currentAnswer.result.isCorrect ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-3">
                       {currentAnswer.result.isCorrect ? <CheckCircle className="w-6 h-6 text-green-400" /> : <XCircle className="w-6 h-6 text-red-400" />}
-                      <span className={`font-bold text-lg ${currentAnswer.result.isCorrect ? 'text-green-400' : 'text-red-400'}`}>
-                        {currentAnswer.result.isCorrect ? 'Correct!' : 'Not quite right'}
+                      <span className={`font-bold ${currentAnswer.result.isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                        {currentAnswer.result.isCorrect ? 'Correct!' : 'Incorrect'}
                       </span>
-                      <span className="ml-auto text-white/70">{currentAnswer.result.marksAwarded}/{currentAnswer.result.maxMarks} marks</span>
+                      <span className="ml-auto text-white/70">{currentAnswer.result.marksAwarded}/{currentAnswer.result.maxMarks}</span>
                     </div>
-                    {currentAnswer.result.feedback && <p className="text-white/80">{currentAnswer.result.feedback}</p>}
+                    {currentAnswer.result.feedback && <p className="text-white/80 mt-2">{currentAnswer.result.feedback}</p>}
                   </div>
                 )}
 
-                {/* Your Answer */}
-                {currentAnswer.userAnswer && (
-                  <div className="p-4 bg-white/5 border-2 border-white/10">
-                    <h4 className="text-white/50 text-sm mb-2">Your Answer</h4>
-                    <p className="text-white">{currentAnswer.userAnswer}</p>
-                  </div>
-                )}
-
-                {/* Correct Answer */}
                 <div className="p-4 bg-white/5 border-2 border-white/10">
                   <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-green-400" /> Correct Answer
                   </h4>
-                  <div className="prose prose-invert max-w-none">
-                    <MarkdownViewer content={currentAnswer.correctAnswer || question.answerText} />
-                  </div>
+                  <MarkdownViewer content={currentAnswer.correctAnswer || question.answerText} />
                 </div>
-
-                {/* Explanation */}
-                {(currentAnswer.explanation || question.explanation) && (
-                  <div className="p-4 bg-blue-500/5 border-2 border-blue-500/20">
-                    <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-blue-400" /> Explanation
-                    </h4>
-                    <div className="prose prose-invert max-w-none text-white/80">
-                      <MarkdownViewer content={currentAnswer.explanation || question.explanation} />
-                    </div>
-                  </div>
-                )}
-
-                {/* Steps */}
-                {(currentAnswer.steps || question.steps)?.length > 0 && (
-                  <div className="p-4 bg-purple-500/5 border-2 border-purple-500/20">
-                    <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                      <Zap className="w-5 h-5 text-purple-400" /> Step-by-Step Working
-                    </h4>
-                    <div className="space-y-3">
-                      {(currentAnswer.steps || question.steps).map((step, i) => (
-                        <div key={i} className="flex gap-3">
-                          <span className="w-6 h-6 bg-purple-500/30 text-purple-300 flex items-center justify-center text-sm flex-shrink-0 rounded">
-                            {step.stepNumber || i + 1}
-                          </span>
-                          <div className="text-white/80">
-                            {step.title && <strong className="text-white">{step.title}: </strong>}
-                            <MarkdownViewer content={step.content} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Tips */}
-                {question.tips?.length > 0 && (
-                  <div className="p-4 bg-yellow-500/5 border-2 border-yellow-500/20">
-                    <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                      <Zap className="w-5 h-5 text-yellow-400" /> Tips
-                    </h4>
-                    <ul className="list-disc list-inside text-white/70 space-y-1">
-                      {question.tips.map((tip, i) => <li key={i}>{tip}</li>)}
-                    </ul>
-                  </div>
-                )}
               </motion.div>
             )}
           </motion.div>
@@ -566,7 +614,7 @@ export default function QuizPage() {
             </button>
             {currentIndex === questions.length - 1 ? (
               <button onClick={handleComplete} className="flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold hover:bg-white/90">
-                <Trophy className="w-5 h-5" /> Complete
+                <Trophy className="w-5 h-5" /> Finish Exam
               </button>
             ) : (
               <button onClick={handleNext} className="flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold hover:bg-white/90">
@@ -576,7 +624,7 @@ export default function QuizPage() {
           </div>
         </div>
 
-        {/* Mathius Tutor Chat */}
+        {/* Tutor Chat */}
         <AnimatePresence>
           {showTutor && (
             <motion.div initial={{ opacity: 0, x: 400 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 400 }} className="fixed right-0 top-0 h-full w-full max-w-md bg-black border-l-2 border-white/20 flex flex-col z-50">
@@ -585,20 +633,19 @@ export default function QuizPage() {
                   <Brain className="w-6 h-6 text-purple-400" />
                   <div>
                     <h3 className="text-white font-semibold">Mathius Tutor</h3>
-                    <p className="text-white/50 text-xs">Ask me anything!</p>
+                    <p className="text-white/50 text-xs">Need help?</p>
                   </div>
                 </div>
                 <button onClick={() => setShowTutor(false)} className="text-white/50 hover:text-white">
                   <X className="w-5 h-5" />
                 </button>
               </div>
-
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {tutorMessages.length === 0 && (
                   <div className="text-center text-white/50 py-8">
                     <Brain className="w-12 h-12 mx-auto mb-4 text-purple-400/50" />
-                    <p>Hi! I'm Mathius, your AI tutor.</p>
-                    <p className="text-sm mt-2">Ask me for hints or help understanding this question!</p>
+                    <p>Hi! I'm Mathius.</p>
+                    <p className="text-sm mt-2">Ask me for hints!</p>
                   </div>
                 )}
                 {tutorMessages.map((msg, i) => (
@@ -617,7 +664,6 @@ export default function QuizPage() {
                 )}
                 <div ref={chatEndRef} />
               </div>
-
               <div className="p-4 border-t-2 border-white/20">
                 <div className="flex gap-2">
                   <input
@@ -625,7 +671,7 @@ export default function QuizPage() {
                     value={tutorInput}
                     onChange={(e) => setTutorInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && sendTutorMessage()}
-                    placeholder="Ask Mathius for help..."
+                    placeholder="Ask for help..."
                     className="flex-1 bg-white/5 border-2 border-white/20 px-4 py-2 text-white placeholder-white/30 focus:border-purple-500 focus:outline-none"
                   />
                   <button onClick={sendTutorMessage} disabled={tutorLoading || !tutorInput.trim()} className="px-4 bg-purple-500 text-white hover:bg-purple-600 disabled:opacity-50">
@@ -642,3 +688,4 @@ export default function QuizPage() {
 
   return null;
 }
+

@@ -329,6 +329,129 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* MATHIUS VS GENERIC AI SECTION */}
+      <section className="relative py-16 px-6">
+        <div className="max-w-6xl mx-auto">
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-white text-[36px] sm:text-[48px] md:text-[60px] font-bold text-center mb-6 leading-tight"
+          >
+            Meet <span className="text-purple-400">Mathius</span>
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-white/60 text-center text-[18px] mb-16 max-w-2xl mx-auto"
+          >
+            Our AI tutor built specifically for Edexcel mathematics
+          </motion.p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Generic AI */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="border border-white/20 p-8 bg-white/[0.02]"
+            >
+              <h3 className="text-white/60 text-[24px] sm:text-[28px] font-bold mb-6">Generic AI</h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3 text-white/50">
+                  <span className="text-red-400">✗</span>
+                  <span>Generic responses not tailored to exams</span>
+                </div>
+                <div className="flex items-start gap-3 text-white/50">
+                  <span className="text-red-400">✗</span>
+                  <span>Doesn't understand mark schemes</span>
+                </div>
+                <div className="flex items-start gap-3 text-white/50">
+                  <span className="text-red-400">✗</span>
+                  <span>May give incorrect mathematical answers</span>
+                </div>
+                <div className="flex items-start gap-3 text-white/50">
+                  <span className="text-red-400">✗</span>
+                  <span>No exam-style question generation</span>
+                </div>
+                <div className="flex items-start gap-3 text-white/50">
+                  <span className="text-red-400">✗</span>
+                  <span>Can't track your progress</span>
+                </div>
+                <div className="flex items-start gap-3 text-white/50">
+                  <span className="text-red-400">✗</span>
+                  <span>Doesn't know Edexcel specification</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Mathius */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="border-2 border-purple-500/50 p-8 bg-purple-500/5 relative"
+            >
+              <div className="absolute top-4 right-4 bg-purple-500 text-white px-3 py-1 text-[11px] font-bold">
+                BUILT FOR EXAMS
+              </div>
+              <div className="flex items-center gap-3 mb-6">
+                <Brain className="w-8 h-8 text-purple-400" />
+                <h3 className="text-white text-[24px] sm:text-[28px] font-bold">Mathius</h3>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3 text-white">
+                  <Check className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                  <span>Trained on 10,000+ Edexcel questions</span>
+                </div>
+                <div className="flex items-start gap-3 text-white">
+                  <Check className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                  <span>Understands mark allocation & examiner notes</span>
+                </div>
+                <div className="flex items-start gap-3 text-white">
+                  <Check className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                  <span>Multi-step verification for accuracy</span>
+                </div>
+                <div className="flex items-start gap-3 text-white">
+                  <Check className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                  <span>Generates authentic exam-style questions</span>
+                </div>
+                <div className="flex items-start gap-3 text-white">
+                  <Check className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                  <span>Tracks weak topics & adapts to you</span>
+                </div>
+                <div className="flex items-start gap-3 text-white">
+                  <Check className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                  <span>Knows every A-Level & O-Level topic</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-center mt-12"
+          >
+            <Link
+              to="/mocks"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-purple-500 text-white text-[16px] font-bold hover:bg-purple-600 transition-all"
+            >
+              <Brain className="w-5 h-5" />
+              Try Mathius Now
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Scroll Down Arrow */}
       <div className="relative py-8 flex justify-center">
         <motion.div
@@ -342,7 +465,7 @@ export default function HomePage() {
       {/* SOLUTION SECTION */}
       <section className="relative py-16 px-6">
         <div className="max-w-5xl mx-auto space-y-16">
-          <SolutionStatement text="AI analyzes every answer." delay={0} />
+          <SolutionStatement text="Mathius analyzes every answer." delay={0} />
           <SolutionStatement text="Identifies your weak spots." delay={0} />
           <SolutionStatement text="Gives you targeted practice." delay={0} />
         </div>
