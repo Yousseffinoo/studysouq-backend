@@ -71,8 +71,12 @@ ${examplesContext}
 
 REQUIREMENTS:
 1. Authentic Edexcel exam style questions
-2. Use LaTeX: $...$ for inline, $$...$$ for display math
-3. Each question must have complete solution
+2. CRITICAL: ALL math MUST be wrapped in LaTeX delimiters:
+   - Use $...$ for inline math (e.g., $x^2 + 5$)
+   - Use $$...$$ for display/block math (e.g., $$\\frac{a}{b}$$)
+   - NEVER write raw LaTeX without delimiters
+   - Example: Write $\\binom{10}{3}$ NOT just \\binom{10}{3}
+3. Each question must have complete solution with ALL math in $ delimiters
 4. Difficulty-based marks: easy(1-2), medium(3-4), hard(5-8)
 5. Vary question types: calculations, applications, word problems
 

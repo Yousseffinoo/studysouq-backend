@@ -17,8 +17,12 @@ import {
   Send,
   RefreshCw,
   MessageCircle,
-  X
+  X,
+  PenTool,
+  Upload,
+  FileText
 } from 'lucide-react';
+import DrawingCanvas from '../quiz/DrawingCanvas';
 import { useAuth } from '../../contexts/AuthContext';
 import MarkdownViewer from '../MarkdownViewer';
 import { getLessonById } from '../../services/publicService';
@@ -44,6 +48,7 @@ export default function QuizPage() {
   const [showConfig, setShowConfig] = useState(true);
   const [numberOfQuestions, setNumberOfQuestions] = useState(5);
   const [difficulty, setDifficulty] = useState('medium');
+  const [answerMode, setAnswerMode] = useState('text'); // 'instant', 'text', 'draw', 'upload'
 
   // AI Generation
   const [generating, setGenerating] = useState(false);
@@ -397,7 +402,7 @@ export default function QuizPage() {
               </div>
             </div>
 
-            <div className="mb-8">
+            <div className="mb-6">
               <label className="block text-white mb-2">Difficulty</label>
               <div className="grid grid-cols-3 gap-2">
                 {DIFFICULTIES.map((d) => (
@@ -405,6 +410,53 @@ export default function QuizPage() {
                     <p className={`font-bold ${difficulty === d.value ? 'text-black' : d.color}`}>{d.label}</p>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Answer Mode Selection */}
+            <div className="mb-8">
+              <label className="block text-white mb-3">How do you want to answer?</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setAnswerMode('instant')}
+                  className={`p-4 border-2 text-left transition-all flex items-start gap-3 ${answerMode === 'instant' ? 'bg-white text-black border-white' : 'border-white/30 text-white hover:border-white/60'}`}
+                >
+                  <Eye className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-semibold">Reveal Instantly</p>
+                    <p className={`text-sm ${answerMode === 'instant' ? 'text-black/70' : 'text-white/50'}`}>See answer immediately</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setAnswerMode('text')}
+                  className={`p-4 border-2 text-left transition-all flex items-start gap-3 ${answerMode === 'text' ? 'bg-white text-black border-white' : 'border-white/30 text-white hover:border-white/60'}`}
+                >
+                  <FileText className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-semibold">Type Answer</p>
+                    <p className={`text-sm ${answerMode === 'text' ? 'text-black/70' : 'text-white/50'}`}>Get AI feedback</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setAnswerMode('draw')}
+                  className={`p-4 border-2 text-left transition-all flex items-start gap-3 ${answerMode === 'draw' ? 'bg-white text-black border-white' : 'border-white/30 text-white hover:border-white/60'}`}
+                >
+                  <PenTool className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-semibold">Draw Answer</p>
+                    <p className={`text-sm ${answerMode === 'draw' ? 'text-black/70' : 'text-white/50'}`}>Write on canvas</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setAnswerMode('upload')}
+                  className={`p-4 border-2 text-left transition-all flex items-start gap-3 ${answerMode === 'upload' ? 'bg-white text-black border-white' : 'border-white/30 text-white hover:border-white/60'}`}
+                >
+                  <Upload className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-semibold">Upload Work</p>
+                    <p className={`text-sm ${answerMode === 'upload' ? 'text-black/70' : 'text-white/50'}`}>Photo or PDF</p>
+                  </div>
+                </button>
               </div>
             </div>
 
@@ -467,20 +519,106 @@ export default function QuizPage() {
             {/* Answer Input */}
             {!showAnswer && !hasAnswered && (
               <div className="border-t-2 border-white/10 pt-6 space-y-4">
-                <textarea
-                  value={userAnswer}
-                  onChange={(e) => setUserAnswer(e.target.value)}
-                  placeholder="Type your answer here... (Use $...$ for math notation)"
-                  className="w-full h-32 bg-black border-2 border-white/30 p-4 text-white placeholder-white/30 focus:border-white focus:outline-none resize-none"
-                />
-                <div className="flex gap-3">
-                  <button onClick={handleSubmitAnswer} disabled={!userAnswer.trim() || submitting} className="flex-1 py-3 bg-white text-black font-semibold hover:bg-white/90 disabled:opacity-50 flex items-center justify-center gap-2">
-                    {submitting ? <><Loader2 className="w-5 h-5 animate-spin" /> Mathius is checking...</> : <><Send className="w-5 h-5" /> Submit Answer</>}
+                {/* Instant Reveal Mode */}
+                {answerMode === 'instant' && (
+                  <button onClick={handleShowAnswer} className="w-full py-4 bg-white text-black font-semibold hover:bg-white/90 flex items-center justify-center gap-2">
+                    <Eye className="w-5 h-5" /> Reveal Answer
                   </button>
-                  <button onClick={handleShowAnswer} className="px-6 py-3 border-2 border-white/30 text-white hover:border-white/60 flex items-center gap-2">
-                    <Eye className="w-5 h-5" /> Reveal
-                  </button>
-                </div>
+                )}
+
+                {/* Type Answer Mode */}
+                {answerMode === 'text' && (
+                  <>
+                    <textarea
+                      value={userAnswer}
+                      onChange={(e) => setUserAnswer(e.target.value)}
+                      placeholder="Type your answer here... (Use $...$ for math notation)"
+                      className="w-full h-32 bg-black border-2 border-white/30 p-4 text-white placeholder-white/30 focus:border-white focus:outline-none resize-none"
+                    />
+                    <div className="flex gap-3">
+                      <button onClick={handleSubmitAnswer} disabled={!userAnswer.trim() || submitting} className="flex-1 py-3 bg-white text-black font-semibold hover:bg-white/90 disabled:opacity-50 flex items-center justify-center gap-2">
+                        {submitting ? <><Loader2 className="w-5 h-5 animate-spin" /> Mathius is checking...</> : <><Send className="w-5 h-5" /> Submit Answer</>}
+                      </button>
+                      <button onClick={handleShowAnswer} className="px-6 py-3 border-2 border-white/30 text-white hover:border-white/60 flex items-center gap-2">
+                        <Eye className="w-5 h-5" /> Skip
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {/* Draw Answer Mode */}
+                {answerMode === 'draw' && (
+                  <div className="space-y-4">
+                    <DrawingCanvas 
+                      onSave={(blob) => {
+                        // Convert blob to base64 for submission
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setUserAnswer(reader.result);
+                        };
+                        reader.readAsDataURL(blob);
+                      }} 
+                    />
+                    <div className="flex gap-3">
+                      <button 
+                        onClick={handleSubmitAnswer} 
+                        disabled={!userAnswer || submitting} 
+                        className="flex-1 py-3 bg-white text-black font-semibold hover:bg-white/90 disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {submitting ? <><Loader2 className="w-5 h-5 animate-spin" /> Mathius is checking...</> : <><Send className="w-5 h-5" /> Submit Drawing</>}
+                      </button>
+                      <button onClick={handleShowAnswer} className="px-6 py-3 border-2 border-white/30 text-white hover:border-white/60 flex items-center gap-2">
+                        <Eye className="w-5 h-5" /> Skip
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Upload Mode */}
+                {answerMode === 'upload' && (
+                  <div className="space-y-4">
+                    <div className="border-2 border-dashed border-white/30 p-8 text-center hover:border-white/50 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setUserAnswer(reader.result);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="hidden"
+                        id="file-upload"
+                      />
+                      <label htmlFor="file-upload" className="cursor-pointer">
+                        <Upload className="w-12 h-12 text-white/50 mx-auto mb-3" />
+                        <p className="text-white mb-1">Click to upload your work</p>
+                        <p className="text-white/50 text-sm">JPG, PNG, or PDF</p>
+                      </label>
+                    </div>
+                    {userAnswer && (
+                      <div className="p-4 bg-green-500/10 border border-green-500/30 text-green-400 text-sm">
+                        ✓ File uploaded and ready to submit
+                      </div>
+                    )}
+                    <div className="flex gap-3">
+                      <button 
+                        onClick={handleSubmitAnswer} 
+                        disabled={!userAnswer || submitting} 
+                        className="flex-1 py-3 bg-white text-black font-semibold hover:bg-white/90 disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {submitting ? <><Loader2 className="w-5 h-5 animate-spin" /> Mathius is checking...</> : <><Send className="w-5 h-5" /> Submit Work</>}
+                      </button>
+                      <button onClick={handleShowAnswer} className="px-6 py-3 border-2 border-white/30 text-white hover:border-white/60 flex items-center gap-2">
+                        <Eye className="w-5 h-5" /> Skip
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

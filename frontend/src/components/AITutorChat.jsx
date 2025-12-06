@@ -188,8 +188,8 @@ export default function AITutorChat() {
         if (messages.length === 0) {
           const lessonContext = getLessonContext();
           const welcomeMessage = lessonContext
-            ? `Hi! 👋 I'm your AI tutor for "${lessonContext.title}". Ask me anything about this lesson!`
-            : `Hi! 👋 I'm your AI tutor. Ask me anything about your lessons!`;
+            ? `Hi! 👋 I'm Mathius, your AI tutor for "${lessonContext.title}". Ask me anything about this lesson!`
+            : `Hi! 👋 I'm Mathius, your AI tutor. Ask me anything about your lessons!`;
           
           const welcomeMsg = {
             text: welcomeMessage,
@@ -334,8 +334,8 @@ export default function AITutorChat() {
     setTimeout(() => {
       const lessonContext = getLessonContext();
       const welcomeMessage = lessonContext
-        ? `Hi! 👋 I'm your AI tutor for "${lessonContext.title}". Ask me anything about this lesson!`
-        : `Hi! 👋 I'm your AI tutor. Ask me anything about your lessons!`;
+        ? `Hi! 👋 I'm Mathius, your AI tutor for "${lessonContext.title}". Ask me anything about this lesson!`
+        : `Hi! 👋 I'm Mathius, your AI tutor. Ask me anything about your lessons!`;
       
       const welcomeMsg = {
         text: welcomeMessage,
@@ -353,7 +353,7 @@ export default function AITutorChat() {
     }
 
     // Build system prompt
-    let systemPrompt = `You are an AI Tutor assistant. Your role is to help students understand their lessons better.
+    let systemPrompt = `You are Mathius, an AI Tutor assistant. Your role is to help students understand their lessons better.
 
 CRITICAL RULES - STRICTLY ENFORCE:
 
@@ -504,8 +504,8 @@ You MUST focus ALL your answers on this specific lesson topic. Any question not 
       // Handle greetings
       if (isGreeting(userMessage)) {
         const greetingResponse = lessonContext
-          ? `Hello! I'm here to help you with "${lessonContext.title}". What would you like to know about this lesson?`
-          : "Hello! I'm your AI tutor. How can I help you with your lesson today?";
+          ? `Hello! I'm Mathius, here to help you with "${lessonContext.title}". What would you like to know?`
+          : "Hello! I'm Mathius, your AI tutor. How can I help you with your lesson today?";
         
         setTimeout(() => {
           const aiMessage = {
@@ -571,14 +571,14 @@ You MUST focus ALL your answers on this specific lesson topic. Any question not 
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             exit={{ scale: 0, rotate: 180 }}
-            whileHover={{ scale: 1.1, rotate: 5 }}
+            whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-[#2F6FED] via-[#5B8EF5] to-[#A9C7FF] rounded-full shadow-2xl flex items-center justify-center z-50 hover:shadow-[#2F6FED]/50 transition-all group"
+            className="fixed bottom-6 right-6 w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center z-50 hover:shadow-white/30 transition-all group border-2 border-white/20"
           >
-            <MessageSquare className="w-8 h-8 text-white group-hover:scale-110 transition-transform" />
+            <span className="text-2xl font-bold text-black group-hover:scale-110 transition-transform">M</span>
             {/* Notification badge */}
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-[#0B1D34] animate-pulse"></span>
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-black animate-pulse"></span>
           </motion.button>
         )}
       </AnimatePresence>
@@ -602,25 +602,25 @@ You MUST focus ALL your answers on this specific lesson topic. Any question not 
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 400 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 right-0 w-full md:bottom-6 md:right-6 md:w-96 bg-[#0B1D34] border-l md:border border-white/10 md:rounded-2xl shadow-2xl z-50 flex flex-col"
+              className="fixed bottom-0 right-0 w-full md:bottom-6 md:right-6 md:w-96 bg-black border-l md:border-2 border-white/20 md:rounded-2xl shadow-2xl z-50 flex flex-col"
               style={{ 
                 height: chatHeight
               }}
             >
               {/* Header */}
               <div 
-                className="flex items-center justify-between p-4 border-b border-white/10 bg-gradient-to-r from-[#0B1D34] to-[#1a2942]"
+                className="flex items-center justify-between p-4 border-b-2 border-white/20 bg-black"
                 style={{ flexShrink: 0 }}
               >
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#2F6FED] via-[#5B8EF5] to-[#A9C7FF] rounded-full flex items-center justify-center mr-3 shadow-lg">
-                    <MessageSquare className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mr-3 shadow-lg">
+                    <span className="text-2xl font-bold text-black">M</span>
                   </div>
                   <div>
-                    <h3 className="text-white font-bold text-lg">AI Tutor</h3>
-                    <p className="text-xs text-[#94A3B8] flex items-center gap-1">
+                    <h3 className="text-white font-bold text-lg">Mathius</h3>
+                    <p className="text-xs text-white/60 flex items-center gap-1">
                       <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                      Online • Ready to help
+                      Your AI Tutor
                     </p>
                   </div>
                 </div>
@@ -647,7 +647,7 @@ You MUST focus ALL your answers on this specific lesson topic. Any question not 
 
               {/* Messages */}
               <div 
-                className="p-4 space-y-4 bg-[#0B1D34]"
+                className="p-4 space-y-4 bg-black"
                 style={{
                   flex: 1,
                   overflowY: 'auto',
@@ -678,8 +678,8 @@ You MUST focus ALL your answers on this specific lesson topic. Any question not 
                       <div
                         className={`${message.image ? 'max-w-[75%]' : 'max-w-[85%]'} px-4 py-3 rounded-2xl shadow-lg ${
                           message.sender === 'user'
-                            ? 'bg-gradient-to-br from-[#2F6FED] to-[#1F5FDD] text-white rounded-br-md order-1'
-                            : 'bg-gradient-to-br from-white/10 to-white/5 text-[#E2E8F0] border border-white/10 rounded-bl-md order-2'
+                            ? 'bg-white text-black rounded-br-md order-1'
+                            : 'bg-white/10 text-white border border-white/20 rounded-bl-md order-2'
                         }`}
                       >
                         {/* Display image if present */}
@@ -724,12 +724,12 @@ You MUST focus ALL your answers on this specific lesson topic. Any question not 
                     animate={{ opacity: 1, y: 0 }}
                     className="flex justify-start"
                   >
-                    <div className="max-w-[85%] px-4 py-3 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-bl-md shadow-lg">
+                    <div className="max-w-[85%] px-4 py-3 rounded-2xl bg-white/10 border border-white/20 rounded-bl-md shadow-lg">
                       <div className="flex items-center gap-3">
-                        <Loader2 className="w-5 h-5 text-[#2F6FED] animate-spin" />
+                        <Loader2 className="w-5 h-5 text-white animate-spin" />
                         <div>
-                          <p className="text-sm text-[#E2E8F0] font-medium">AI is analyzing...</p>
-                          <p className="text-xs text-[#94A3B8] mt-0.5">Please wait a moment</p>
+                          <p className="text-sm text-white font-medium">Mathius is thinking...</p>
+                          <p className="text-xs text-white/60 mt-0.5">Please wait a moment</p>
                         </div>
                       </div>
                     </div>
@@ -741,7 +741,7 @@ You MUST focus ALL your answers on this specific lesson topic. Any question not 
 
               {/* Input */}
               <div 
-                className="p-4 border-t border-white/10 bg-gradient-to-r from-[#0B1D34] to-[#1a2942]"
+                className="p-4 border-t-2 border-white/20 bg-black"
                 style={{ flexShrink: 0 }}
               >
                 {/* Image Preview */}
@@ -795,10 +795,10 @@ You MUST focus ALL your answers on this specific lesson topic. Any question not 
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isLoading}
-                    className="px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center group hover:border-[#2F6FED]/50"
+                    className="px-4 py-3 bg-white/10 hover:bg-white/20 border-2 border-white/20 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center group hover:border-white/40"
                     title="Upload homework image"
                   >
-                    <Camera className="w-5 h-5 text-[#94A3B8] group-hover:text-[#2F6FED] transition-colors" />
+                    <Camera className="w-5 h-5 text-white/60 group-hover:text-white transition-colors" />
                   </button>
 
                   {/* Text input */}
@@ -818,22 +818,22 @@ You MUST focus ALL your answers on this specific lesson topic. Any question not 
                     }}
                     placeholder={selectedImage ? "📷 Add a message with your image (optional)" : "Ask about the lesson..."}
                     disabled={isLoading}
-                    className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-[#2F6FED] focus:ring-2 focus:ring-[#2F6FED]/20 transition-all text-sm text-white placeholder:text-[#94A3B8] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 py-3 bg-white/10 border-2 border-white/20 rounded-xl focus:outline-none focus:border-white transition-all text-sm text-white placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
 
                   {/* Send button - changes based on whether image is selected */}
                   <button
                     onClick={selectedImage ? handleImageUpload : handleSend}
                     disabled={isLoading || (!input.trim() && !selectedImage)}
-                    className="px-5 py-3 bg-gradient-to-r from-[#2F6FED] to-[#1F5FDD] hover:from-[#1F5FDD] hover:to-[#2F6FED] rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg hover:shadow-[#2F6FED]/50 hover:scale-105"
+                    className="px-5 py-3 bg-white hover:bg-white/90 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg hover:scale-105"
                     title={selectedImage ? "Analyze image" : "Send message"}
                   >
                     {isLoading ? (
-                      <Loader2 className="w-5 h-5 text-white animate-spin" />
+                      <Loader2 className="w-5 h-5 text-black animate-spin" />
                     ) : selectedImage ? (
-                      <ImageIcon className="w-5 h-5 text-white" />
+                      <ImageIcon className="w-5 h-5 text-black" />
                     ) : (
-                      <Send className="w-5 h-5 text-white" />
+                      <Send className="w-5 h-5 text-black" />
                     )}
                   </button>
                 </div>

@@ -101,7 +101,14 @@ export default function MocksPage() {
         return;
       }
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/public/subjects/${selectedSubject}/lessons`);
+        // Find the subject ID from the selected slug
+        const subject = subjects.find(s => s.slug === selectedSubject);
+        if (!subject) {
+          console.log('Subject not found:', selectedSubject);
+          setLessons([]);
+          return;
+        }
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/public/lessons?subject=${subject._id}`);
         const data = await response.json();
         console.log('Lessons response:', data);
         setLessons(data.data || []);
@@ -111,7 +118,7 @@ export default function MocksPage() {
     };
     fetchLessons();
     setSelectedLessons([]);
-  }, [selectedSubject]);
+  }, [selectedSubject, subjects]);
 
   const toggleLesson = (lessonId) => {
     setSelectedLessons(prev => 
@@ -409,20 +416,29 @@ export default function MocksPage() {
             {/* Subject Selection */}
             <div className="mb-6">
               <label className="block text-white mb-2">Select Subject</label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {subjects.map((s) => (
-                  <button
-                    key={s._id}
-                    onClick={() => setSelectedSubject(s.slug)}
-                    className={`p-3 border-2 text-left transition-all ${
-                      selectedSubject === s.slug ? 'bg-white text-black border-white' : 'border-white/30 text-white hover:border-white/60'
-                    }`}
-                  >
-                    <p className="font-medium">{s.name}</p>
-                    <p className={`text-xs ${selectedSubject === s.slug ? 'text-black/70' : 'text-white/50'}`}>{s.level}</p>
-                  </button>
-                ))}
-              </div>
+              {subjects.length === 0 ? (
+                <div className="p-4 border-2 border-white/20 text-center">
+                  <p className="text-white/50">Loading subjects...</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {subjects.map((s) => (
+                    <button
+                      key={s._id}
+                      onClick={() => {
+                        console.log('Selected subject:', s.slug);
+                        setSelectedSubject(s.slug);
+                      }}
+                      className={`p-3 border-2 text-left transition-all ${
+                        selectedSubject === s.slug ? 'bg-white text-black border-white' : 'border-white/30 text-white hover:border-white/60'
+                      }`}
+                    >
+                      <p className="font-medium">{s.name}</p>
+                      <p className={`text-xs ${selectedSubject === s.slug ? 'text-black/70' : 'text-white/50'}`}>{s.level}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Lesson Selection */}
