@@ -189,34 +189,12 @@ export default function LessonPage() {
                 ) : (
                   <div className="prose prose-invert max-w-none">
                     <div className="bg-white/5 p-6 border-2 border-white/10">
-                      <h3 className="text-white mb-4">Introduction</h3>
-                      {currentLesson.content ? (
-                        <MarkdownViewer
-                          content={currentLesson.content}
-                          className="text-white/80"
-                        />
-                      ) : (
-                        <>
-                          <p className="text-white/80 mb-4">
-                            {`This section covers the fundamental concepts of ${currentLesson.title.toLowerCase()}.
-                            You'll learn key principles, formulas, and problem-solving techniques.`}
-                          </p>
-
-                          <h3 className="text-white mb-4 mt-6">Key Concepts</h3>
-                          <ul className="text-white/80 space-y-2">
-                            <li>Understanding the theoretical foundation</li>
-                            <li>Applying formulas and methods</li>
-                            <li>Solving real-world problems</li>
-                            <li>Common mistakes to avoid</li>
-                          </ul>
-                        </>
-                      )}
-
-                      <div className="mt-6 p-4 bg-white/10 border-2 border-white/20">
-                        <p className="text-white/90 text-sm">
-                          💡 <strong>Pro Tip:</strong> Practice is key! Make sure to work through all the practice questions to master this topic.
-                        </p>
-                      </div>
+                      <p className="text-white/70 text-center py-8">
+                        📝 No notes available for this lesson yet.
+                      </p>
+                      <p className="text-white/50 text-sm text-center">
+                        Notes will be added soon to help you master this topic.
+                      </p>
                     </div>
                   </div>
                 )
