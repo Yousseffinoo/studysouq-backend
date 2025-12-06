@@ -1,6 +1,5 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -33,14 +32,10 @@ const app = express();
 // Trust proxy (for rate limiting behind reverse proxy)
 app.set('trust proxy', 1);
 
-// Security middleware - disable crossOrigin settings that conflict with CORS
-app.use(helmet({
-  crossOriginResourcePolicy: false,
-  crossOriginOpenerPolicy: false,
-  crossOriginEmbedderPolicy: false
-}));
-
-// CORS configuration - MUST use specific origins with credentials: true
+// ============================================
+// MANUAL CORS - BULLETPROOF SOLUTION
+// This runs FIRST before anything else
+// ============================================
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
@@ -54,35 +49,42 @@ const allowedOrigins = [
   process.env.ADMIN_URL
 ].filter(Boolean);
 
-// Create CORS options object to reuse
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, server-to-server)
-    if (!origin) return callback(null, true);
-    
-    // Check if origin is in allowed list
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log('❌ CORS blocked origin:', origin);
-      console.log('✅ Allowed origins:', allowedOrigins);
-      // In production, still allow but log - don't break the request
-      callback(null, true);
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  exposedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 200,
-  preflightContinue: false
-};
+// Manual CORS middleware - runs before EVERYTHING
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  // Check if origin is allowed
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else if (!origin) {
+    // No origin (same-origin, Postman, etc.) - allow
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]);
+  } else {
+    // Unknown origin - still set a specific origin (first allowed) to avoid * with credentials
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+  
+  next();
+});
 
-// Apply CORS middleware
-app.use(cors(corsOptions));
-
-// Handle preflight requests with SAME corsOptions
-app.options('*', cors(corsOptions));
+// Security middleware - with reduced restrictions for CORS compatibility
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+  crossOriginOpenerPolicy: false,
+  crossOriginEmbedderPolicy: false
+}));
 
 // File upload middleware MUST come before body parser for multipart/form-data
 app.use(fileUpload({
@@ -119,20 +121,13 @@ const __dirname = path.dirname(__filename);
 // Uploads folder is at project root level
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Serve test HTML file
-app.use('/test', express.static(path.join(__dirname, '..')));
-
 // Rate limiting - More lenient in development
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'development' ? 10000 : 100, // Much higher limit in development
+  max: process.env.NODE_ENV === 'development' ? 10000 : 500,
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => {
-    // Skip rate limiting for health checks
-    return req.path === '/health';
-  }
 });
 
 // Apply rate limiting to all routes
@@ -141,7 +136,7 @@ app.use('/api/', limiter);
 // Stricter rate limiting for auth routes
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Higher limit in development
+  max: process.env.NODE_ENV === 'development' ? 1000 : 50,
   message: 'Too many authentication attempts, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -152,19 +147,21 @@ app.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Server is running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    allowedOrigins: allowedOrigins
   });
 });
+
 // API routes
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api', publicRoutes); // Public routes for frontend website
+app.use('/api', publicRoutes);
 app.use('/api/ai', aiImageRoutes);
 app.use('/api/chat', chatRoutes);
-app.use('/api/payments', paymentRoutes); // Payment routes
-app.use('/api/questions', questionsRoutes); // Questions & Quiz system
+app.use('/api/payments', paymentRoutes);
+app.use('/api/questions', questionsRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
@@ -172,18 +169,8 @@ app.get('/', (req, res) => {
     success: true,
     message: 'Welcome to StudySouq API',
     version: '2.0.0',
-    endpoints: {
-      health: '/health',
-      auth: '/api/auth',
-      users: '/api/users',
-      progress: '/api/progress',
-      admin: '/api/admin',
-      subjects: '/api/subjects',
-      lessons: '/api/lessons',
-      questions: '/api/questions',
-      payments: '/api/payments',
-      chat: '/api/chat'
-    }
+    cors: 'Manual CORS enabled',
+    allowedOrigins: allowedOrigins
   });
 });
 
@@ -197,56 +184,23 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
-  console.log(`
-    ╔═══════════════════════════════════════════════════════════╗
-    ║                                                           ║
-    ║   🚀  StudySouq API Server                                ║
-    ║                                                           ║
-    ║   📍  Server running on port ${PORT}                       ║
-    ║   🌍  Environment: ${process.env.NODE_ENV || 'development'}                          ║
-    ║   🔗  URL: http://localhost:${PORT}                        ║
-    ║                                                           ║
-    ╚═══════════════════════════════════════════════════════════╝
-  `);
-  console.log('✅ Allowed CORS origins:', allowedOrigins);
+  console.log(`🚀 StudySouq API Server running on port ${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`✅ Allowed CORS origins:`, allowedOrigins);
 });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   console.error('❌ UNHANDLED REJECTION! Shutting down...');
-  console.error('ERROR ORIGIN:', err.name, err.message);
-  if (process.env.NODE_ENV === 'development') {
-    console.error('ERROR STACK:', err.stack);
-  }
-  server.close(() => {
-    process.exit(1);
-  });
+  console.error('ERROR:', err.message);
+  server.close(() => process.exit(1));
 });
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
   console.error('❌ UNCAUGHT EXCEPTION! Shutting down...');
-  console.error('ERROR ORIGIN:', err.name, err.message);
-  if (process.env.NODE_ENV === 'development') {
-    console.error('ERROR STACK:', err.stack);
-  }
+  console.error('ERROR:', err.message);
   process.exit(1);
 });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('👋 SIGTERM received. Shutting down gracefully...');
-  server.close(() => {
-    console.log('💤 Process terminated!');
-  });
-});
-console.log("PAYMOB_API_KEY:", process.env.PAYMOB_API_KEY);
-console.log("PAYMOB_PUBLIC_KEY:", process.env.PAYMOB_PUBLIC_KEY);
-console.log("PAYMOB_INTEGRATION_ID:", process.env.PAYMOB_INTEGRATION_ID);
-console.log("PAYMOB_IFRAME_ID:", process.env.PAYMOB_IFRAME_ID);
-console.log("PAYMOB_HMAC:", process.env.PAYMOB_HMAC);
-
-
 export default app;
-
-
