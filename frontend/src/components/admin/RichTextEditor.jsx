@@ -1,50 +1,74 @@
-import { useMemo } from 'react';
-import ReactQuill from 'react-quill';
+import { useMemo, useEffect } from 'react';
+import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import 'katex/dist/katex.min.css';
 
+// Import formula module - required for LaTeX support
+import 'quill/formats/formula';
+
 export default function RichTextEditor({ value, onChange, placeholder = 'Write something...' }) {
+  // Register formula format on mount
+  useEffect(() => {
+    // Ensure formula format is registered
+    if (window.katex) {
+      console.log('✓ KaTeX is loaded and ready');
+    } else {
+      console.warn('⚠️ KaTeX not found - formula rendering may not work');
+    }
+  }, []);
+
   // Quill modules configuration
   const modules = useMemo(() => ({
     toolbar: {
       container: [
         // Headers
         [{ header: [1, 2, 3, 4, 5, 6, false] }],
-        
+
         // Font styles
         [{ font: [] }],
         [{ size: ['small', false, 'large', 'huge'] }],
-        
+
         // Text formatting
         ['bold', 'italic', 'underline', 'strike'],
-        
+
         // Colors
         [{ color: [] }, { background: [] }],
-        
+
         // Lists
         [{ list: 'ordered' }, { list: 'bullet' }],
         [{ indent: '-1' }, { indent: '+1' }],
-        
+
         // Text alignment
         [{ align: [] }],
-        
+
         // Scripts (superscript/subscript)
         [{ script: 'sub' }, { script: 'super' }],
-        
-        // Math formula (LaTeX support)
+
+        // Math formula (LaTeX support) - √ FORMULA BUTTON
         ['formula'],
-        
+
         // Blockquote and code block
         ['blockquote', 'code-block'],
-        
+
         // Links and media
         ['link', 'image', 'video'],
-        
+
         // Clear formatting
         ['clean']
-      ]
+      ],
+      handlers: {
+        // Custom handler for formula button
+        formula: function() {
+          const value = prompt('Enter LaTeX formula:');
+          if (value) {
+            const cursorPosition = this.quill.getSelection()?.index || 0;
+            this.quill.insertEmbed(cursorPosition, 'formula', value, 'user');
+            this.quill.setSelection(cursorPosition + 1);
+          }
+        }
+      }
     },
-    
+
     // Clipboard module for better paste handling
     clipboard: {
       matchVisual: false

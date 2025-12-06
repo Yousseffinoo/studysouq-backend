@@ -3,7 +3,7 @@ import { Plus, Search, Edit, Trash2, X, FileText } from 'lucide-react';
 import { toast } from 'react-toastify';
 import AdminLayout from '../../admin/AdminLayout';
 import RichTextEditor from '../../admin/RichTextEditor';
-import { getAllNotes, createNote, updateNote, deleteNote } from '../../../services/adminService';
+import { getAllNotes, createNote, updateNote, deleteNote, getAllLessons } from '../../../services/adminService';
 
 export default function NotesPage() {
   const [notes, setNotes] = useState([]);
@@ -19,6 +19,7 @@ export default function NotesPage() {
     title: '',
     content: '',
     summary: '',
+    lesson: '', // ADD: Lesson ID field
     subject: 'physics',
     class: '9th',
     chapter: 1,
@@ -28,20 +29,29 @@ export default function NotesPage() {
     isVisible: true
   });
   const [tagInput, setTagInput] = useState('');
+  const [availableLessons, setAvailableLessons] = useState([]); // ADD: Store lessons for dropdown
+  const [loadingLessons, setLoadingLessons] = useState(false); // ADD: Loading state for lessons
 
   useEffect(() => {
     fetchNotes();
   }, [page, search, subjectFilter, typeFilter]);
 
+  // Fetch lessons when modal opens or when subject/class/chapter changes
+  useEffect(() => {
+    if (showModal) {
+      fetchLessonsForForm();
+    }
+  }, [showModal, formData.subject, formData.class, formData.chapter]);
+
   const fetchNotes = async () => {
     try {
       setLoading(true);
-      const response = await getAllNotes({ 
-        page, 
-        limit: 10, 
-        search, 
+      const response = await getAllNotes({
+        page,
+        limit: 10,
+        search,
         subject: subjectFilter,
-        type: typeFilter 
+        type: typeFilter
       });
       if (response.success) {
         setNotes(response.data.notes);
@@ -51,6 +61,26 @@ export default function NotesPage() {
       toast.error('Failed to load notes');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLessonsForForm = async () => {
+    try {
+      setLoadingLessons(true);
+      const response = await getAllLessons({
+        subject: formData.subject,
+        class: formData.class,
+        chapter: formData.chapter,
+        limit: 100 // Get all lessons for this criteria
+      });
+      if (response.success) {
+        setAvailableLessons(response.data.lessons || []);
+      }
+    } catch (error) {
+      console.error('Failed to load lessons:', error);
+      setAvailableLessons([]);
+    } finally {
+      setLoadingLessons(false);
     }
   };
 
@@ -90,6 +120,7 @@ export default function NotesPage() {
       title: note.title,
       content: note.content,
       summary: note.summary || '',
+      lesson: note.lesson?._id || note.lesson || '', // ADD: Include lesson ID
       subject: note.subject,
       class: note.class,
       chapter: note.chapter,
@@ -107,6 +138,7 @@ export default function NotesPage() {
       title: '',
       content: '',
       summary: '',
+      lesson: '', // ADD: Reset lesson field
       subject: 'physics',
       class: '9th',
       chapter: 1,
@@ -116,6 +148,7 @@ export default function NotesPage() {
       isVisible: true
     });
     setTagInput('');
+    setAvailableLessons([]); // ADD: Clear lessons list
   };
 
   const addTag = () => {
@@ -373,6 +406,35 @@ export default function NotesPage() {
                     className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:border-[#2F6FED]"
                   />
                 </div>
+              </div>
+
+              {/* ADD: Lesson Selector */}
+              <div>
+                <label className="block text-sm mb-2 text-[#94A3B8]">
+                  Lesson (Optional - link this note to a specific lesson)
+                </label>
+                <select
+                  value={formData.lesson}
+                  onChange={(e) => setFormData({ ...formData, lesson: e.target.value })}
+                  disabled={loadingLessons}
+                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white outline-none focus:border-[#2F6FED] disabled:opacity-50"
+                >
+                  <option value="">-- No Lesson (General Note) --</option>
+                  {loadingLessons ? (
+                    <option disabled>Loading lessons...</option>
+                  ) : availableLessons.length === 0 ? (
+                    <option disabled>No lessons found for {formData.subject} / {formData.class} / Ch.{formData.chapter}</option>
+                  ) : (
+                    availableLessons.map(lesson => (
+                      <option key={lesson._id} value={lesson._id}>
+                        {lesson.title}
+                      </option>
+                    ))
+                  )}
+                </select>
+                <p className="text-xs text-[#94A3B8] mt-1">
+                  💡 Select subject/class/chapter first to see available lessons
+                </p>
               </div>
 
               <div>
