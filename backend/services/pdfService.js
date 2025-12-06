@@ -1,4 +1,14 @@
-import pdf from 'pdf-parse';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
+// pdf-parse doesn't support ESM, so we use createRequire
+let pdf;
+try {
+  pdf = require('pdf-parse');
+} catch (e) {
+  console.warn('pdf-parse not available, PDF extraction will be disabled');
+  pdf = null;
+}
 
 /**
  * Extract text from a PDF buffer
@@ -6,6 +16,13 @@ import pdf from 'pdf-parse';
  * @returns {Promise<{success: boolean, text?: string, error?: string, metadata?: object}>}
  */
 export async function extractTextFromPDF(pdfBuffer) {
+  if (!pdf) {
+    return {
+      success: false,
+      error: 'PDF parsing is not available'
+    };
+  }
+  
   try {
     const data = await pdf(pdfBuffer);
     
@@ -55,15 +72,11 @@ export function cleanPDFText(rawText) {
   if (!rawText) return '';
   
   let cleaned = rawText
-    // Remove multiple consecutive newlines
     .replace(/\n{3,}/g, '\n\n')
-    // Remove page headers/footers patterns
     .replace(/Page \d+ of \d+/gi, '')
     .replace(/\[Turn over\]/gi, '')
-    .replace(/\*\w+\*/g, '') // Remove reference codes like *P12345*
-    // Clean up spacing
+    .replace(/\*\w+\*/g, '')
     .replace(/[ \t]+/g, ' ')
-    // Remove leading/trailing whitespace from lines
     .split('\n')
     .map(line => line.trim())
     .filter(line => line.length > 0)
@@ -74,17 +87,13 @@ export function cleanPDFText(rawText) {
 
 /**
  * Split PDF text into pages (approximate)
- * @param {string} text - Full PDF text
- * @param {number} totalPages - Total number of pages
- * @returns {string[]} - Array of page contents
  */
 export function splitIntoPages(text, totalPages) {
   if (totalPages <= 1) return [text];
   
-  // Split by common page break patterns
   const pageBreakPatterns = [
-    /\n\s*\d+\s*\n/g, // Page numbers
-    /\f/g, // Form feed characters
+    /\n\s*\d+\s*\n/g,
+    /\f/g,
   ];
   
   let pages = [text];
@@ -93,7 +102,6 @@ export function splitIntoPages(text, totalPages) {
     pages = pages.flatMap(page => page.split(pattern));
   }
   
-  // If still not enough pages, split roughly by character count
   if (pages.length < totalPages) {
     const charsPerPage = Math.ceil(text.length / totalPages);
     pages = [];
@@ -106,17 +114,13 @@ export function splitIntoPages(text, totalPages) {
 }
 
 /**
- * Extract images from PDF (placeholder - would need additional library like pdf2pic)
- * @param {Buffer} pdfBuffer - The PDF file buffer
- * @returns {Promise<{success: boolean, images?: Array, error?: string}>}
+ * Extract images from PDF (placeholder)
  */
 export async function extractImagesFromPDF(pdfBuffer) {
-  // Note: Full image extraction requires additional libraries like pdf2pic or pdfjs-dist
-  // This is a placeholder that can be expanded
   return {
     success: true,
     images: [],
-    message: 'Image extraction not implemented - images will be described textually by AI'
+    message: 'Image extraction not implemented'
   };
 }
 
@@ -127,4 +131,3 @@ export default {
   splitIntoPages,
   extractImagesFromPDF
 };
-
