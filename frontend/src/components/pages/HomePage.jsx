@@ -704,15 +704,21 @@ export default function HomePage() {
 function ProblemStatement({ text, delay }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8, delay }}
-      className="text-center min-h-[40vh] flex items-center justify-center"
+      initial={{ opacity: 0, x: -100 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.8, delay, ease: "easeOut" }}
+      className="text-center min-h-[30vh] flex items-center justify-center"
     >
-      <p className="text-white text-[28px] sm:text-[36px] md:text-[44px] font-bold leading-[1.1] max-w-4xl">
+      <motion.p 
+        className="text-white/60 text-[28px] sm:text-[36px] md:text-[44px] font-bold leading-[1.1] max-w-4xl line-through decoration-white/30"
+        whileInView={{ 
+          textDecorationColor: "rgba(255,255,255,0.5)"
+        }}
+        transition={{ delay: delay + 0.3 }}
+      >
         {text}
-      </p>
+      </motion.p>
     </motion.div>
   );
 }
@@ -720,15 +726,20 @@ function ProblemStatement({ text, delay }) {
 function SolutionStatement({ text, delay }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8, delay }}
-      className="text-center min-h-[40vh] flex items-center justify-center"
+      initial={{ opacity: 0, x: 100 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.8, delay, ease: "easeOut" }}
+      className="text-center min-h-[30vh] flex items-center justify-center"
     >
-      <p className="text-white text-[28px] sm:text-[36px] md:text-[44px] font-bold leading-[1.1] max-w-4xl">
-        {text}
-      </p>
+      <motion.p 
+        className="text-white text-[28px] sm:text-[36px] md:text-[44px] font-bold leading-[1.1] max-w-4xl"
+        initial={{ scale: 0.9 }}
+        whileInView={{ scale: 1 }}
+        transition={{ delay: delay + 0.2, duration: 0.5 }}
+      >
+        ✓ {text}
+      </motion.p>
     </motion.div>
   );
 }
@@ -736,13 +747,29 @@ function SolutionStatement({ text, delay }) {
 function FeatureCard({ icon: Icon, title, description, delay }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8, delay }}
-      className="border border-white/20 p-8 hover:border-white/30 transition-all duration-300"
+      initial={{ opacity: 0, y: 60, scale: 0.95 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ 
+        duration: 0.6, 
+        delay,
+        ease: [0.25, 0.46, 0.45, 0.94]
+      }}
+      whileHover={{ 
+        y: -8, 
+        borderColor: "rgba(255,255,255,0.4)",
+        transition: { duration: 0.2 }
+      }}
+      className="border border-white/20 p-8 transition-all duration-300 bg-white/[0.02]"
     >
-      <Icon className="w-10 h-10 text-white mb-6" />
+      <motion.div
+        initial={{ scale: 0, rotate: -180 }}
+        whileInView={{ scale: 1, rotate: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: delay + 0.2, duration: 0.5, type: "spring" }}
+      >
+        <Icon className="w-10 h-10 text-white mb-6" />
+      </motion.div>
       <h3 className="text-white text-[20px] sm:text-[22px] font-bold mb-4">{title}</h3>
       <p className="text-white/70 text-[15px] sm:text-[16px] leading-relaxed">{description}</p>
     </motion.div>
@@ -761,20 +788,33 @@ function PricingPoint({ text }) {
 function HowItWorksStep({ number, text, delay }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8, delay }}
+      initial={{ opacity: 0, x: number % 2 === 0 ? 100 : -100 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.7, delay, ease: "easeOut" }}
       className="flex flex-col md:flex-row items-center md:items-start justify-center gap-6 md:gap-12 text-center md:text-left"
     >
-      <div className="text-white/15 text-[120px] sm:text-[150px] md:text-[180px] font-bold leading-none">
+      <motion.div 
+        className="text-white/10 text-[120px] sm:text-[150px] md:text-[180px] font-bold leading-none"
+        initial={{ scale: 0, rotate: -90 }}
+        whileInView={{ scale: 1, rotate: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: delay + 0.2, duration: 0.5, type: "spring", stiffness: 100 }}
+      >
         {number}
-      </div>
+      </motion.div>
       <div className="flex-1 flex items-center justify-center md:justify-start min-h-[150px]">
-        <p className="text-white text-[26px] sm:text-[32px] md:text-[38px] font-bold leading-[1.1] max-w-2xl">
+        <motion.p 
+          className="text-white text-[26px] sm:text-[32px] md:text-[38px] font-bold leading-[1.1] max-w-2xl"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: delay + 0.3, duration: 0.5 }}
+        >
           {text}
-        </p>
+        </motion.p>
       </div>
     </motion.div>
   );
 }
+

@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import apiClient from '../../lib/apiClient';
-import PageHeader from '../../components/layout/PageHeader';
+import { PageHeader } from '../../components/layout';
 
 const SUBJECT_LEVELS = ['O-Level', 'AS-Level', 'A2-Level'];
 
@@ -152,7 +152,6 @@ export default function Training() {
       <PageHeader
         title="AI Training System"
         description="Upload past papers to train Mathius on authentic Edexcel questions"
-        icon={Brain}
       />
 
       {/* Stats Overview */}

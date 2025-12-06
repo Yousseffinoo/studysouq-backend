@@ -78,15 +78,31 @@ export default function MocksPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/public/subjects`);
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        console.log('Fetching subjects from:', `${apiUrl}/api/public/subjects`);
+        
+        const response = await fetch(`${apiUrl}/api/public/subjects`);
+        
+        if (!response.ok) {
+          console.error('Subjects API error:', response.status, response.statusText);
+          setError(`Failed to load subjects (${response.status})`);
+          setLoading(false);
+          return;
+        }
+        
         const data = await response.json();
         console.log('Subjects response:', data);
-        if (data.success) {
-          setSubjects(data.data?.subjects || data.data || []);
+        
+        if (data.success && data.data) {
+          const subjectsList = Array.isArray(data.data) ? data.data : (data.data.subjects || []);
+          setSubjects(subjectsList);
+          console.log('Loaded subjects:', subjectsList.length);
+        } else {
+          setError('No subjects available');
         }
       } catch (err) {
         console.error('Load subjects error:', err);
-        setError('Failed to load subjects');
+        setError('Failed to load subjects. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -416,9 +432,20 @@ export default function MocksPage() {
             {/* Subject Selection */}
             <div className="mb-6">
               <label className="block text-white mb-2">Select Subject</label>
-              {subjects.length === 0 ? (
+              {loading ? (
                 <div className="p-4 border-2 border-white/20 text-center">
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-white/50" />
                   <p className="text-white/50">Loading subjects...</p>
+                </div>
+              ) : subjects.length === 0 ? (
+                <div className="p-4 border-2 border-red-500/30 bg-red-500/10 text-center">
+                  <p className="text-red-400">{error || 'No subjects available'}</p>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="mt-2 text-sm text-white/50 hover:text-white underline"
+                  >
+                    Retry
+                  </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">

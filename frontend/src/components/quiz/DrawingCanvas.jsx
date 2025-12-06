@@ -22,27 +22,47 @@ export default function DrawingCanvas({ onSave, width = 800 }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    saveToHistory();
+    
+    // Wait for next frame to ensure canvas has dimensions
+    requestAnimationFrame(() => {
+      if (canvas.width > 0 && canvas.height > 0) {
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        saveToHistory();
+      }
+    });
   }, []);
 
-  // Extend canvas when it changes height
+  // Extend canvas when it changes height (only after initial render)
+  const isFirstRender = useRef(true);
+  
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    
+    // Skip first render - canvas is already initialized
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    // Calculate the previous height (before adding more paper)
+    const previousHeight = canvasHeight - HEIGHT_INCREMENT;
+    if (previousHeight <= 0) return;
 
     // Save current drawing
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height - HEIGHT_INCREMENT;
+    tempCanvas.height = previousHeight;
     const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.drawImage(canvas, 0, 0);
+    
+    // Only draw if we have valid dimensions
+    if (tempCanvas.width > 0 && tempCanvas.height > 0) {
+      tempCtx.drawImage(canvas, 0, 0);
+    }
 
     // Resize main canvas
     const ctx = canvas.getContext('2d');
@@ -50,7 +70,9 @@ export default function DrawingCanvas({ onSave, width = 800 }) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Restore previous drawing
-    ctx.drawImage(tempCanvas, 0, 0);
+    if (tempCanvas.width > 0 && tempCanvas.height > 0) {
+      ctx.drawImage(tempCanvas, 0, 0);
+    }
     
     // Reset drawing settings
     ctx.lineCap = 'round';
@@ -59,11 +81,15 @@ export default function DrawingCanvas({ onSave, width = 800 }) {
 
   const saveToHistory = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || canvas.width <= 0 || canvas.height <= 0) return;
 
-    const imageData = canvas.toDataURL();
-    setHistory(prev => [...prev.slice(0, historyIndex + 1), imageData]);
-    setHistoryIndex(prev => prev + 1);
+    try {
+      const imageData = canvas.toDataURL();
+      setHistory(prev => [...prev.slice(0, historyIndex + 1), imageData]);
+      setHistoryIndex(prev => prev + 1);
+    } catch (e) {
+      console.warn('Failed to save canvas history:', e);
+    }
   }, [historyIndex]);
 
   const getCoordinates = (e) => {
