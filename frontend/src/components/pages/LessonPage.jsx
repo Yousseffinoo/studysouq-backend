@@ -27,13 +27,25 @@ export default function LessonPage() {
 
         // Fetch lesson details
         const lessonResult = await getLessonById(lessonId);
+        console.log('=== LESSON FETCH ===');
+        console.log('Lesson Result:', lessonResult);
+
         if (lessonResult.success) {
           setCurrentLesson(lessonResult.data);
+          console.log('Current Lesson:', lessonResult.data);
 
           // Fetch notes for this lesson
           const notesResult = await getNotes({ lesson: lessonId });
+          console.log('=== NOTES FETCH ===');
+          console.log('Notes Result:', notesResult);
+          console.log('Notes Data:', notesResult.data);
+
           if (notesResult.success && notesResult.data.length > 0) {
+            console.log('Setting lesson notes to:', notesResult.data[0]);
+            console.log('Note Content:', notesResult.data[0].content);
             setLessonNotes(notesResult.data[0]); // Use first note if available
+          } else {
+            console.log('No notes found');
           }
         } else {
           setError(lessonResult.message || 'Lesson not found');
@@ -50,6 +62,15 @@ export default function LessonPage() {
       fetchLesson();
     }
   }, [lessonId]);
+
+  // Debug user and premium status
+  useEffect(() => {
+    console.log('=== AUTH STATUS ===');
+    console.log('User:', user);
+    console.log('Token:', token ? 'EXISTS' : 'MISSING');
+    console.log('isPremium:', isPremium);
+    console.log('lessonNotes:', lessonNotes);
+  }, [user, token, isPremium, lessonNotes]);
 
   // Loading state
   if (loading) {
@@ -138,8 +159,8 @@ export default function LessonPage() {
                   </div>}
               </div>
 
-              {(isPremium && user && token) ? (
-                lessonNotes ? (
+              {lessonNotes ? (
+                (isPremium && user && token) ? (
                   <div className="prose prose-invert max-w-none">
                     <div className="bg-white/5 p-6 border-2 border-white/10">
                       {/* Notes Content with Markdown + Math Rendering */}
@@ -186,7 +207,70 @@ export default function LessonPage() {
                       )}
                     </div>
                   </div>
+                ) : (!user || !token) ? (
+                  <div className="relative">
+                    <div className="blur-sm select-none pointer-events-none">
+                      <div className="bg-white/5 p-6 border-2 border-white/10">
+                        <h3 className="text-white mb-4">Introduction</h3>
+                        <p className="text-white/80 mb-4">
+                          This section covers the fundamental concepts of mathematics.
+                          You'll learn key principles, formulas, and problem-solving techniques.
+                        </p>
+                        <div className="h-32 bg-white/5"></div>
+                      </div>
+                    </div>
+
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-transparent via-black/80 to-black">
+                      <div className="text-center p-8">
+                        <Lock className="w-12 h-12 text-white mx-auto mb-4" />
+                        <h3 className="mb-4">Login Required</h3>
+                        <p className="text-white/70 mb-6 max-w-md">
+                          Please login to access lesson notes and premium content
+                        </p>
+                        <button
+                          onClick={() => {
+                            navigate('/login', { state: { from: `/lesson/${lessonId}` } });
+                          }}
+                          className="inline-block px-8 py-3 bg-white text-black hover:bg-white/90 transition-all duration-300 font-semibold"
+                        >
+                          Login Now
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 ) : (
+                  <div className="relative">
+                    <div className="blur-sm select-none pointer-events-none">
+                      <div className="bg-white/5 p-6 border-2 border-white/10">
+                        <h3 className="text-white mb-4">Introduction</h3>
+                        <p className="text-white/80 mb-4">
+                          This section covers the fundamental concepts of mathematics.
+                          You'll learn key principles, formulas, and problem-solving techniques.
+                        </p>
+                        <div className="h-32 bg-white/5"></div>
+                      </div>
+                    </div>
+
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-transparent via-black/80 to-black">
+                      <div className="text-center p-8">
+                        <Lock className="w-12 h-12 text-white mx-auto mb-4" />
+                        <h3 className="mb-4">Unlock Premium Notes</h3>
+                        <p className="text-white/70 mb-6 max-w-md">
+                          Get access to comprehensive notes, detailed explanations, and study guides for all lessons
+                        </p>
+                        <button
+                          onClick={() => {
+                            navigate('/pricing', { state: { targetSection: 'pricing-plans' } });
+                          }}
+                          className="inline-block px-8 py-3 bg-white text-black hover:bg-white/90 transition-all duration-300 font-semibold"
+                        >
+                          Upgrade to Premium
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              ) : (
                   <div className="prose prose-invert max-w-none">
                     <div className="bg-white/5 p-6 border-2 border-white/10">
                       <p className="text-white/70 text-center py-8">
