@@ -1,21 +1,9 @@
-import { useMemo, useEffect } from 'react';
-import ReactQuill, { Quill } from 'react-quill';
+import { useMemo } from 'react';
+import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import 'katex/dist/katex.min.css';
 
-// Import formula module - required for LaTeX support
-import 'quill/formats/formula';
-
 export default function RichTextEditor({ value, onChange, placeholder = 'Write something...' }) {
-  // Register formula format on mount
-  useEffect(() => {
-    // Ensure formula format is registered
-    if (window.katex) {
-      console.log('✓ KaTeX is loaded and ready');
-    } else {
-      console.warn('⚠️ KaTeX not found - formula rendering may not work');
-    }
-  }, []);
 
   // Quill modules configuration
   const modules = useMemo(() => ({
