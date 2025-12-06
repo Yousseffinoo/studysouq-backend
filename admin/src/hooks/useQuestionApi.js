@@ -1,105 +1,200 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { API } from '@/lib/apiClient'
+import { apiClient } from '@/lib/apiClient'
+import toast from 'react-hot-toast'
 
-// Re-export subjects and lessons from main API hooks
-export { useSubjects, useLessons } from './useApi'
+// Keys
+const QUESTIONS_KEY = ['questions']
+const SUBJECTS_KEY = ['subjects']
+const LESSONS_KEY = ['lessons']
 
-// ============ QUESTIONS ============
-
+// Get all questions
 export function useQuestions(params = {}) {
   return useQuery({
-    queryKey: ['questions', params],
-    queryFn: () => API.get('/api/questions/admin/all', { params }),
+    queryKey: [...QUESTIONS_KEY, params],
+    queryFn: async () => {
+      const queryString = new URLSearchParams(
+        Object.entries(params).filter(([_, v]) => v !== '' && v !== undefined)
+      ).toString()
+      const { data } = await apiClient.get(`/admin/questions?${queryString}`)
+      return data.data
+    }
   })
 }
 
-export function useQuestion(id) {
+// Get subjects (reuse from other hooks or create)
+export function useSubjects(params = {}) {
   return useQuery({
-    queryKey: ['question', id],
-    queryFn: () => API.get(`/api/questions/admin/${id}`),
-    enabled: !!id,
+    queryKey: [...SUBJECTS_KEY, params],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/admin/subjects', { params })
+      return data.data
+    }
   })
 }
 
+// Get lessons
+export function useLessons(params = {}) {
+  return useQuery({
+    queryKey: [...LESSONS_KEY, params],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/admin/lessons', { params })
+      return data.data
+    }
+  })
+}
+
+// Create question
 export function useCreateQuestion() {
   const queryClient = useQueryClient()
+  
   return useMutation({
-    mutationFn: (data) => API.post('/api/questions/admin/create', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questions'] })
+    mutationFn: async (questionData) => {
+      const { data } = await apiClient.post('/admin/questions', questionData)
+      return data
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUESTIONS_KEY })
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to create question')
+    }
   })
 }
 
+// Update question
 export function useUpdateQuestion() {
   const queryClient = useQueryClient()
+  
   return useMutation({
-    mutationFn: ({ id, data }) => API.put(`/api/questions/admin/${id}`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questions'] })
+    mutationFn: async ({ id, data: questionData }) => {
+      const { data } = await apiClient.put(`/admin/questions/${id}`, questionData)
+      return data
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUESTIONS_KEY })
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to update question')
+    }
   })
 }
 
+// Delete question
 export function useDeleteQuestion() {
   const queryClient = useQueryClient()
+  
   return useMutation({
-    mutationFn: (id) => API.delete(`/api/questions/admin/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questions'] })
+    mutationFn: async (id) => {
+      const { data } = await apiClient.delete(`/admin/questions/${id}`)
+      return data
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUESTIONS_KEY })
+      toast.success('Question deleted')
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to delete question')
+    }
   })
 }
 
-// ============ AI GENERATION ============
-
+// Generate AI questions (for admin testing)
 export function useGenerateQuestions() {
   return useMutation({
-    mutationFn: (data) => API.post('/api/questions/admin/generate', data),
-  })
-}
-
-export function useSaveGeneratedQuestions() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (data) => API.post('/api/questions/admin/save-generated', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questions'] })
+    mutationFn: async ({ subject, lesson, difficulty, numberOfQuestions }) => {
+      const { data } = await apiClient.post('/questions/generate', {
+        lessonId: lesson,
+        subject,
+        difficulty,
+        numberOfQuestions
+      })
+      return {
+        success: data.success,
+        generatedQuestions: data.data?.questions || []
+      }
     },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to generate questions')
+    }
   })
 }
 
-export function useRegenerateExplanation() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (id) => API.post(`/api/questions/admin/${id}/regenerate-explanation`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questions'] })
-    },
-  })
-}
-
-// ============ PDF UPLOAD ============
-
+// Upload questions PDF (past paper)
 export function useUploadQuestionsPDF() {
+  const queryClient = useQueryClient()
+  
   return useMutation({
-    mutationFn: (formData) => API.upload('/api/questions/admin/upload-questions-pdf', formData),
+    mutationFn: async (formData) => {
+      // Create FormData with correct field name
+      const fd = new FormData()
+      fd.append('questionsPdf', formData.get('pdf'))
+      fd.append('subject', formData.get('subject'))
+      fd.append('lessonId', formData.get('lesson'))
+      
+      const { data } = await apiClient.post('/questions/upload/questions-pdf', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUESTIONS_KEY })
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to upload PDF')
+    }
   })
 }
 
+// Upload markscheme PDF
 export function useUploadMarkschemePDF() {
   return useMutation({
-    mutationFn: (formData) => API.upload('/api/questions/admin/upload-markscheme-pdf', formData),
-  })
-}
-
-export function useMergeAndSaveQuestions() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (data) => API.post('/api/questions/admin/merge-and-save', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questions'] })
+    mutationFn: async (formData) => {
+      const fd = new FormData()
+      fd.append('markschemePdf', formData.get('pdf'))
+      
+      const { data } = await apiClient.post('/questions/upload/markscheme-pdf', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      return data
     },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to upload markscheme')
+    }
   })
 }
 
+// Save extracted questions to database
+export function useSavePastPaperQuestions() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async ({ questionsData, markschemeData, metadata }) => {
+      const { data } = await apiClient.post('/questions/upload/save', {
+        questionsData,
+        markschemeData,
+        metadata
+      })
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUESTIONS_KEY })
+      toast.success('Questions saved to database')
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to save questions')
+    }
+  })
+}
+
+export default {
+  useQuestions,
+  useSubjects,
+  useLessons,
+  useCreateQuestion,
+  useUpdateQuestion,
+  useDeleteQuestion,
+  useGenerateQuestions,
+  useUploadQuestionsPDF,
+  useUploadMarkschemePDF,
+  useSavePastPaperQuestions
+}

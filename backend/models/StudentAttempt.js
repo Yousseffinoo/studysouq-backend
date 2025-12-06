@@ -11,8 +11,13 @@ const studentAttemptSchema = new mongoose.Schema({
   question: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Question',
-    required: true,
+    default: null, // null for AI-generated questions
     index: true
+  },
+  // Store AI question data when question is not from DB
+  aiQuestionData: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
   },
   session: {
     type: mongoose.Schema.Types.ObjectId,

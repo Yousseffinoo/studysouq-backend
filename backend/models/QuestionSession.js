@@ -52,7 +52,12 @@ const questionSessionSchema = new mongoose.Schema({
   questions: [{
     question: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Question'
+      ref: 'Question',
+      default: null // null for AI-generated
+    },
+    aiQuestion: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null // Store AI question data directly
     },
     order: Number,
     answered: {
@@ -65,6 +70,12 @@ const questionSessionSchema = new mongoose.Schema({
       default: null
     }
   }],
+
+  // Flag for AI-generated sessions
+  isAIGenerated: {
+    type: Boolean,
+    default: false
+  },
 
   // Session state
   status: {
