@@ -69,6 +69,9 @@ export const getProgress = async () => {
   }
 };
 
+// Alias for getProgress
+export const getStudentProgress = getProgress;
+
 // Get recommendations
 export const getRecommendations = async () => {
   try {
@@ -99,6 +102,7 @@ export default {
   getQuestionsByLesson,
   startAISession,
   getProgress,
+  getStudentProgress,
   getRecommendations,
   startQuizSession,
   getCurrentSession,
