@@ -7,6 +7,7 @@ import {
   Layers,
   FileText,
   StickyNote,
+  HelpCircle,
   Users,
   CreditCard,
   DollarSign,
@@ -24,6 +25,7 @@ const navigation = [
   { name: 'Subsections', href: '/sections', icon: Layers },
   { name: 'Lessons', href: '/lessons', icon: FileText },
   { name: 'Notes', href: '/notes', icon: StickyNote },
+  { name: 'Questions', href: '/questions', icon: HelpCircle },
   { name: 'Users', href: '/users', icon: Users },
   { name: 'Payments', href: '/payments', icon: CreditCard },
   { name: 'Pricing', href: '/pricing', icon: DollarSign },
@@ -106,4 +108,3 @@ export function Sidebar({ onLogout }) {
     </aside>
   )
 }
-

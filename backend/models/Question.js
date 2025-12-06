@@ -1,84 +1,106 @@
 import mongoose from 'mongoose';
 
 const questionSchema = new mongoose.Schema({
-  questionText: {
+  // Relationship fields
+  subject: {
     type: String,
-    required: [true, 'Question text is required']
+    required: [true, 'Subject is required'],
+    index: true
   },
-  questionImage: {
-    url: String,
-    publicId: String
-  },
-  options: [{
-    text: {
-      type: String,
-      required: true
-    },
-    image: {
-      url: String,
-      publicId: String
-    },
-    isCorrect: {
-      type: Boolean,
-      default: false
-    }
-  }],
-  correctAnswer: {
-    type: Number, // Index of correct option
-    required: [true, 'Correct answer is required']
-  },
-  explanation: {
-    type: String,
-    required: [true, 'Explanation is required']
-  },
-  hint: {
-    type: String,
-    default: null
+  section: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Section',
+    default: null // Only for A-Level subjects
   },
   lesson: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Lesson',
-    default: null
+    required: [true, 'Lesson is required'],
+    index: true
   },
-  subject: {
+
+  // Question content
+  questionText: {
     type: String,
-    required: [true, 'Subject is required'],
-    enum: ['physics', 'chemistry', 'mathematics', 'biology', 'computer-science'],
-    default: 'physics'
+    required: [true, 'Question text is required']
   },
-  class: {
+  questionImages: [{
+    url: String,
+    publicId: String,
+    caption: String
+  }],
+
+  // Answer content
+  answerText: {
     type: String,
-    required: [true, 'Class is required'],
-    enum: ['9th', '10th', '11th', '12th'],
-    default: '9th'
+    required: [true, 'Answer text is required']
   },
-  chapter: {
+  answerImages: [{
+    url: String,
+    publicId: String,
+    caption: String
+  }],
+
+  // AI-generated explanation (stored for reuse)
+  explanation: {
+    type: String,
+    default: ''
+  },
+  steps: [{
+    stepNumber: Number,
+    content: String
+  }],
+
+  // Metadata
+  marks: {
     type: Number,
-    required: [true, 'Chapter number is required']
+    default: 1,
+    min: 1
   },
   difficulty: {
     type: String,
     enum: ['easy', 'medium', 'hard'],
-    default: 'medium'
+    default: 'medium',
+    index: true
   },
-  marks: {
-    type: Number,
-    default: 1
-  },
-  type: {
+  source: {
     type: String,
-    enum: ['mcq', 'true-false', 'fill-blank', 'numerical'],
-    default: 'mcq'
+    enum: ['manual', 'past_paper', 'ai_generated'],
+    default: 'manual',
+    index: true
   },
-  isPremium: {
-    type: Boolean,
-    default: false
+  paperYear: {
+    type: String,
+    default: null // e.g., "2023", "May 2022"
   },
-  isVisible: {
-    type: Boolean,
-    default: true
+  paperSession: {
+    type: String,
+    default: null // e.g., "May/June", "Oct/Nov"
   },
-  timesAnswered: {
+  examBoard: {
+    type: String,
+    default: null // e.g., "Cambridge", "Edexcel"
+  },
+
+  // Original question reference (for past papers)
+  originalQuestionNumber: {
+    type: String,
+    default: null // e.g., "1a", "2b"
+  },
+  
+  // Tags for filtering and searching
+  tags: [{
+    type: String,
+    trim: true
+  }],
+
+  // Examiner notes (from markscheme)
+  examinerNotes: [{
+    type: String
+  }],
+
+  // Statistics
+  timesAttempted: {
     type: Number,
     default: 0
   },
@@ -86,14 +108,25 @@ const questionSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  accuracy: {
+  averageScore: {
     type: Number,
     default: 0
   },
+
+  // Status
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  isVerified: {
+    type: Boolean,
+    default: false // Admin has verified the question
+  },
+
+  // Audit
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: 'User'
   },
   updatedBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -103,19 +136,29 @@ const questionSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Calculate accuracy when times answered changes
-questionSchema.pre('save', function(next) {
-  if (this.timesAnswered > 0) {
-    this.accuracy = (this.timesCorrect / this.timesAnswered) * 100;
-  }
-  next();
+// Indexes for efficient querying
+questionSchema.index({ subject: 1, lesson: 1 });
+questionSchema.index({ subject: 1, section: 1, lesson: 1 });
+questionSchema.index({ difficulty: 1, source: 1 });
+questionSchema.index({ tags: 1 });
+questionSchema.index({ '$**': 'text' }); // Full-text search
+
+// Virtual for success rate
+questionSchema.virtual('successRate').get(function() {
+  if (this.timesAttempted === 0) return 0;
+  return Math.round((this.timesCorrect / this.timesAttempted) * 100);
 });
 
-// Indexes
-questionSchema.index({ subject: 1, class: 1, chapter: 1 });
-questionSchema.index({ lesson: 1 });
-questionSchema.index({ difficulty: 1 });
-questionSchema.index({ isPremium: 1 });
+// Method to update statistics
+questionSchema.methods.updateStats = async function(isCorrect, score) {
+  this.timesAttempted += 1;
+  if (isCorrect) {
+    this.timesCorrect += 1;
+  }
+  // Update rolling average
+  this.averageScore = ((this.averageScore * (this.timesAttempted - 1)) + score) / this.timesAttempted;
+  await this.save();
+};
 
 const Question = mongoose.model('Question', questionSchema);
 

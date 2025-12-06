@@ -25,6 +25,8 @@ import AboutPage from './components/pages/AboutPage';
 import SampleContentPage from './components/pages/SampleContentPage';
 import RefundPolicyPage from './components/pages/RefundPolicyPage';
 import ContactUsPage from './components/pages/ContactUsPage';
+import QuizPage from './components/pages/QuizPage';
+import ProgressDashboard from './components/pages/ProgressDashboard';
 import AdminRoute from './components/admin/AdminRoute';
 import AdminDashboard from './components/pages/admin/AdminDashboard';
 import UsersPage from './components/pages/admin/UsersPage';
@@ -94,6 +96,8 @@ function AppShell() {
             <Route path="/subjects/:subjectId/:sectionId" element={<LessonsListPage />} />
             <Route path="/lesson/:lessonId" element={<LessonPage />} />
             <Route path="/lesson/:lessonId/questions" element={<QuestionPage />} />
+            <Route path="/quiz/:lessonId" element={<QuizPage />} />
+            <Route path="/progress" element={<ProgressDashboard />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
@@ -147,6 +151,8 @@ function AppShell() {
             <Route path="/subjects/:subjectId/:sectionId" element={<LessonsListPage />} />
             <Route path="/lesson/:lessonId" element={<LessonPage />} />
             <Route path="/lesson/:lessonId/questions" element={<QuestionPage />} />
+            <Route path="/quiz/:lessonId" element={<QuizPage />} />
+            <Route path="/progress" element={<ProgressDashboard />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />

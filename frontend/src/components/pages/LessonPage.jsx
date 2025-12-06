@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ArrowLeft, Lock, BookOpen, Loader2, AlertCircle, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Lock, BookOpen, Loader2, AlertCircle, Image as ImageIcon, Play, BarChart3 } from 'lucide-react';
 import { getLessonById } from '../../services/publicService';
 import AITutorChat from '../AITutorChat';
 import MarkdownViewer from '../MarkdownViewer';
@@ -279,7 +279,7 @@ export default function LessonPage() {
             </div>
           </motion.div>
 
-          {/* Practice Questions CTA */}
+          {/* Practice & Quiz Section */}
           <motion.div initial={{
           opacity: 0,
           y: 30
@@ -289,23 +289,81 @@ export default function LessonPage() {
         }} transition={{
           duration: 0.6,
           delay: 0.4
-        }}>
-            <Link to={`/lesson/${lessonId}/questions`} className="block group">
-              <div className="bg-black border-2 border-white/20 p-8 hover:border-white transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="mb-3">Practice Questions</h3>
-                    <p className="text-white/70">
-                      Test your understanding with curated practice problems
-                    </p>
+        }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* AI Quiz System */}
+            <Link to={`/quiz/${lessonId}`} className="block group">
+              <div className="bg-black border-2 border-white/20 p-6 hover:border-white transition-all duration-300 h-full">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-blue-500/20 rounded">
+                    <Play className="w-6 h-6 text-blue-400" />
                   </div>
-                  <svg className="w-8 h-8 text-white group-hover:translate-x-2 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold mb-2 group-hover:text-blue-400 transition-colors">
+                      AI-Powered Quiz
+                    </h3>
+                    <p className="text-white/70 text-sm">
+                      Practice with instant AI feedback, draw your answers, or upload your work
+                    </p>
+                    <div className="flex items-center gap-2 mt-3">
+                      <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs">AI Checking</span>
+                      <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs">Step-by-step</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+
+            {/* Traditional Questions */}
+            <Link to={`/lesson/${lessonId}/questions`} className="block group">
+              <div className="bg-black border-2 border-white/20 p-6 hover:border-white transition-all duration-300 h-full">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-purple-500/20 rounded">
+                    <BookOpen className="w-6 h-6 text-purple-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold mb-2 group-hover:text-purple-400 transition-colors">
+                      Practice Questions
+                    </h3>
+                    <p className="text-white/70 text-sm">
+                      Browse and study all available practice problems for this lesson
+                    </p>
+                    <div className="flex items-center gap-2 mt-3">
+                      <span className="px-2 py-1 bg-purple-500/20 text-purple-400 text-xs">Past Papers</span>
+                      <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs">All Levels</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </Link>
           </motion.div>
+
+          {/* Progress Link */}
+          {user && token && (
+            <motion.div initial={{
+            opacity: 0,
+            y: 30
+          }} animate={{
+            opacity: 1,
+            y: 0
+          }} transition={{
+            duration: 0.6,
+            delay: 0.5
+          }} className="mt-4">
+              <Link to="/progress" className="block group">
+                <div className="bg-black border-2 border-white/10 p-4 hover:border-white/30 transition-all duration-300">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <BarChart3 className="w-5 h-5 text-white/50" />
+                      <span className="text-white/70 text-sm">View Your Progress Dashboard</span>
+                    </div>
+                    <svg className="w-5 h-5 text-white/50 group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          )}
         </div>
       </div>
 

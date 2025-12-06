@@ -19,6 +19,7 @@ import publicRoutes from './routes/publicRoutes.js';
 import aiImageRoutes from './routes/aiImageRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import questionsRoutes from './routes/questions.routes.js';
 
 // Load environment variables
 dotenv.config();
@@ -131,6 +132,7 @@ app.use('/api', publicRoutes); // Public routes for frontend website
 app.use('/api/ai', aiImageRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/payments', paymentRoutes); // Payment routes
+app.use('/api/questions', questionsRoutes); // Questions & Quiz system
 
 // Welcome route
 app.get('/', (req, res) => {
