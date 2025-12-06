@@ -221,12 +221,20 @@ export default function QuizPage() {
         context: {
           currentQuestion: questions[currentIndex]?.questionText,
           lessonTopic: lesson?.title,
-          previousMessages: tutorMessages.slice(-6)
+          previousMessages: tutorMessages.slice(-6).map(m => ({
+            role: m.role,
+            content: m.content || m.message
+          }))
         }
       });
 
       if (response.data.success) {
-        setTutorMessages(prev => [...prev, response.data.data]);
+        // Handle both 'message' and 'content' keys from backend
+        const assistantData = response.data.data;
+        setTutorMessages(prev => [...prev, {
+          role: 'assistant',
+          content: assistantData.content || assistantData.message
+        }]);
       }
     } catch (err) {
       setTutorMessages(prev => [...prev, { 

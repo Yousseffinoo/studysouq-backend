@@ -422,38 +422,66 @@ export async function processTrainingBatch(batchId) {
  * Get training statistics
  */
 export async function getTrainingStats() {
-  const questionStats = await TrainingQuestion.getStatsByLevel();
-  const batchStats = await TrainingBatch.getUploadStats();
-  
-  // Get topic distribution
-  const topicDistribution = await TrainingQuestion.aggregate([
-    { $unwind: '$detectedTopics' },
-    {
-      $group: {
-        _id: { level: '$subjectLevel', topic: '$detectedTopics' },
-        count: { $sum: 1 }
-      }
-    },
-    { $sort: { count: -1 } }
-  ]);
-  
-  // Format topic distribution by level
-  const topicsByLevel = {};
-  for (const item of topicDistribution) {
-    const level = item._id.level;
-    if (!topicsByLevel[level]) topicsByLevel[level] = [];
-    topicsByLevel[level].push({
-      topic: item._id.topic,
-      count: item.count
-    });
+  try {
+    // Get stats with fallbacks for empty collections
+    let questionStats = [];
+    let batchStats = [];
+    let topicDistribution = [];
+    
+    try {
+      questionStats = await TrainingQuestion.getStatsByLevel() || [];
+    } catch (e) {
+      console.log('No training questions yet:', e.message);
+    }
+    
+    try {
+      batchStats = await TrainingBatch.getUploadStats() || [];
+    } catch (e) {
+      console.log('No training batches yet:', e.message);
+    }
+    
+    try {
+      topicDistribution = await TrainingQuestion.aggregate([
+        { $unwind: { path: '$detectedTopics', preserveNullAndEmptyArrays: true } },
+        {
+          $group: {
+            _id: { level: '$subjectLevel', topic: '$detectedTopics' },
+            count: { $sum: 1 }
+          }
+        },
+        { $sort: { count: -1 } }
+      ]) || [];
+    } catch (e) {
+      console.log('No topics yet:', e.message);
+    }
+    
+    // Format topic distribution by level
+    const topicsByLevel = {};
+    for (const item of topicDistribution) {
+      if (!item._id || !item._id.level) continue;
+      const level = item._id.level;
+      if (!topicsByLevel[level]) topicsByLevel[level] = [];
+      topicsByLevel[level].push({
+        topic: item._id.topic || 'Unknown',
+        count: item.count
+      });
+    }
+    
+    return {
+      byLevel: questionStats,
+      batches: batchStats,
+      topicsByLevel,
+      totalQuestions: questionStats.reduce((sum, s) => sum + (s.totalQuestions || 0), 0)
+    };
+  } catch (error) {
+    console.error('getTrainingStats error:', error);
+    return {
+      byLevel: [],
+      batches: [],
+      topicsByLevel: {},
+      totalQuestions: 0
+    };
   }
-  
-  return {
-    byLevel: questionStats,
-    batches: batchStats,
-    topicsByLevel,
-    totalQuestions: questionStats.reduce((sum, s) => sum + s.totalQuestions, 0)
-  };
 }
 
 /**

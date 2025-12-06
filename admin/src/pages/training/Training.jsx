@@ -47,19 +47,22 @@ export default function Training() {
     setLoading(true);
     try {
       const [statsRes, batchesRes] = await Promise.all([
-        apiClient.get('/training/stats'),
-        apiClient.get('/training/batches?limit=50')
+        apiClient.get('/api/training/stats'),
+        apiClient.get('/api/training/batches?limit=50')
       ]);
 
-      if (statsRes.data.success) {
+      if (statsRes.data?.success) {
         setStats(statsRes.data.data);
       }
-      if (batchesRes.data.success) {
-        setBatches(batchesRes.data.data);
+      if (batchesRes.data?.success) {
+        setBatches(batchesRes.data.data || []);
       }
     } catch (error) {
       console.error('Fetch error:', error);
-      toast.error('Failed to load training data');
+      // Don't show toast on initial load if no data yet - it's expected
+      if (error.response?.status !== 500) {
+        toast.error('Failed to load training data');
+      }
     } finally {
       setLoading(false);
     }
@@ -83,7 +86,7 @@ export default function Training() {
 
     setUploading(true);
     try {
-      const response = await apiClient.post('/training/upload', formData, {
+      const response = await apiClient.post('/api/training/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
@@ -106,7 +109,7 @@ export default function Training() {
     if (!confirm('Delete this batch and all its questions?')) return;
     
     try {
-      await apiClient.delete(`/training/batch/${batchId}`);
+      await apiClient.delete(`/api/training/batch/${batchId}`);
       toast.success('Batch deleted');
       fetchData();
     } catch (error) {
@@ -116,7 +119,7 @@ export default function Training() {
 
   const reprocessBatch = async (batchId) => {
     try {
-      await apiClient.post(`/training/batch/${batchId}/reprocess`);
+      await apiClient.post(`/api/training/batch/${batchId}/reprocess`);
       toast.success('Reprocessing started');
       fetchData();
     } catch (error) {

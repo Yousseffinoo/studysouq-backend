@@ -78,23 +78,13 @@ export default function MocksPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        console.log('Fetching subjects from:', `${apiUrl}/api/public/subjects`);
+        console.log('Fetching subjects...');
         
-        const response = await fetch(`${apiUrl}/api/public/subjects`);
+        const response = await api.get('/public/subjects');
+        console.log('Subjects response:', response.data);
         
-        if (!response.ok) {
-          console.error('Subjects API error:', response.status, response.statusText);
-          setError(`Failed to load subjects (${response.status})`);
-          setLoading(false);
-          return;
-        }
-        
-        const data = await response.json();
-        console.log('Subjects response:', data);
-        
-        if (data.success && data.data) {
-          const subjectsList = Array.isArray(data.data) ? data.data : (data.data.subjects || []);
+        if (response.data.success && response.data.data) {
+          const subjectsList = Array.isArray(response.data.data) ? response.data.data : (response.data.data.subjects || []);
           setSubjects(subjectsList);
           console.log('Loaded subjects:', subjectsList.length);
         } else {
@@ -102,7 +92,7 @@ export default function MocksPage() {
         }
       } catch (err) {
         console.error('Load subjects error:', err);
-        setError('Failed to load subjects. Please try again.');
+        setError(`Failed to load subjects (${err.response?.status || err.message})`);
       } finally {
         setLoading(false);
       }
@@ -124,10 +114,9 @@ export default function MocksPage() {
           setLessons([]);
           return;
         }
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/public/lessons?subject=${subject._id}`);
-        const data = await response.json();
-        console.log('Lessons response:', data);
-        setLessons(data.data || []);
+        const response = await api.get(`/public/lessons?subject=${subject._id}`);
+        console.log('Lessons response:', response.data);
+        setLessons(response.data.data || []);
       } catch (err) {
         console.error('Failed to fetch lessons:', err);
       }
@@ -283,11 +272,19 @@ export default function MocksPage() {
         context: {
           currentQuestion: questions[currentIndex]?.questionText,
           lessonTopic: questions[currentIndex]?.lessonTitle,
-          previousMessages: tutorMessages.slice(-6)
+          previousMessages: tutorMessages.slice(-6).map(m => ({
+            role: m.role,
+            content: m.content || m.message
+          }))
         }
       });
       if (response.data.success) {
-        setTutorMessages(prev => [...prev, response.data.data]);
+        // Handle both 'message' and 'content' keys from backend
+        const assistantData = response.data.data;
+        setTutorMessages(prev => [...prev, {
+          role: 'assistant',
+          content: assistantData.content || assistantData.message
+        }]);
       }
     } catch (err) {
       setTutorMessages(prev => [...prev, { role: 'assistant', content: "I'm having trouble. Please try again!" }]);
