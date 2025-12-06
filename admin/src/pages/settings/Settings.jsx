@@ -1,281 +1,234 @@
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Save, User, Upload, X } from 'lucide-react'
-import { Button } from '../../components/ui/button'
-import { Input } from '../../components/ui/input'
-import { Label } from '../../components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { Settings as SettingsIcon, Save } from 'lucide-react'
+import {
+  Button,
+  Input,
+  Label,
+  Textarea,
+  Switch,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  PageSpinner,
+} from '@/components/ui'
+import { PageHeader } from '@/components/layout'
+import { useSettings, useUpdateSettings } from '@/hooks/useApi'
 import toast from 'react-hot-toast'
-import { useAdminAuth } from '../../hooks/useAdminAuth'
-import { uploadImage } from '../../services/admin/imagesService'
-import { API } from '../../lib/apiClient'
 
 export function Settings() {
-  const { user, refreshUser } = useAdminAuth()
-  const [loading, setLoading] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
-    avatar: null,
-    avatarPreview: null
+  const { data, isLoading } = useSettings()
+  const updateMutation = useUpdateSettings()
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+  } = useForm({
+    defaultValues: {
+      siteName: '',
+      siteDescription: '',
+      contactEmail: '',
+      supportEmail: '',
+      maintenanceMode: false,
+      registrationEnabled: true,
+      emailVerificationRequired: true,
+      freeTrialDays: 7,
+      maxFreeQuestions: 5,
+    },
   })
 
+  const watchMaintenanceMode = watch('maintenanceMode')
+  const watchRegistrationEnabled = watch('registrationEnabled')
+  const watchEmailVerification = watch('emailVerificationRequired')
+
   useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name || '',
-        avatar: null,
-        avatarPreview: user.avatar || null
+    if (data) {
+      reset({
+        siteName: data.siteName || '',
+        siteDescription: data.siteDescription || '',
+        contactEmail: data.contactEmail || '',
+        supportEmail: data.supportEmail || '',
+        maintenanceMode: data.maintenanceMode || false,
+        registrationEnabled: data.registrationEnabled !== false,
+        emailVerificationRequired: data.emailVerificationRequired !== false,
+        freeTrialDays: data.freeTrialDays || 7,
+        maxFreeQuestions: data.maxFreeQuestions || 5,
       })
     }
-  }, [user])
+  }, [data, reset])
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file')
-      return
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Image size must be less than 10MB')
-      return
-    }
-
+  const onSubmit = async (formData) => {
     try {
-      setLoading(true)
-      toast.loading('Uploading image...', { id: 'upload-image' })
-
-      const imageData = await uploadImage({
-        image: file,
-        title: 'Admin profile image',
-        category: 'profile'
-      })
-
-      // Handle response structure - API.upload returns image object directly
-      // Backend returns: { success: true, message: "...", data: image }
-      // API.upload returns: image object (response.data.data)
-      console.log('Image upload response:', imageData)
-      
-      const imageUrl = imageData?.url || (imageData?.data && imageData.data.url)
-      
-      if (imageUrl) {
-        setFormData(prev => ({
-          ...prev,
-          avatar: imageUrl,
-          avatarPreview: imageUrl
-        }))
-        toast.success('Image uploaded successfully', { id: 'upload-image' })
-      } else {
-        console.error('No image URL in response:', imageData)
-        toast.error('Image uploaded but URL not found. Response: ' + JSON.stringify(imageData), { id: 'upload-image' })
-      }
+      await updateMutation.mutateAsync(formData)
+      toast.success('Settings saved successfully')
     } catch (error) {
-      console.error('Error uploading image:', error)
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to upload image'
-      toast.error(errorMessage, { id: 'upload-image' })
-    } finally {
-      setLoading(false)
+      toast.error(error.message || 'Failed to save settings')
     }
   }
 
-  const handleRemoveImage = () => {
-    setFormData(prev => ({
-      ...prev,
-      avatar: null,
-      avatarPreview: null
-    }))
-  }
-
-  const handleSave = async (e) => {
-    e.preventDefault()
-    
-    if (!formData.name || !formData.name.trim()) {
-      toast.error('Name is required')
-      return
-    }
-
-    setSaving(true)
-    try {
-      const updateData = {
-        name: formData.name.trim()
-      }
-
-      // Handle avatar update
-      if (formData.avatar) {
-        // New image uploaded
-        updateData.avatar = formData.avatar
-      } else if (formData.avatarPreview === null && user.avatar) {
-        // User removed existing image, clear it
-        updateData.avatar = ''
-      }
-      // If avatarPreview exists and no new avatar, don't send avatar field (keep existing)
-
-      const response = await API.put('/api/users/profile', updateData)
-      
-      console.log('Profile update response:', response)
-      
-      // Handle response structure
-      // Backend returns: { success: true, message: "...", data: { user: {...} } }
-      // API.put returns: response.data.data (which is { user: {...} }) or response.data
-      const userData = response?.user || (response?.data && response.data.user) || response
-      
-      if (userData && (userData.name || userData.avatar !== undefined)) {
-        // Update user in localStorage
-        const updatedUser = {
-          ...user,
-          name: userData.name !== undefined ? userData.name : user.name,
-          avatar: userData.avatar !== undefined ? (userData.avatar || null) : user.avatar
-        }
-        
-        console.log('Updating user:', updatedUser)
-        localStorage.setItem('user', JSON.stringify(updatedUser))
-        
-        // Refresh user data in auth state
-        const refreshedUser = await refreshUser()
-        if (refreshedUser) {
-          // Update formData with refreshed user data
-          setFormData(prev => ({
-            ...prev,
-            name: refreshedUser.name || updatedUser.name,
-            avatar: null, // Clear the upload state
-            avatarPreview: refreshedUser.avatar || updatedUser.avatar || null
-          }))
-        } else {
-          // Fallback: update formData with local data
-          setFormData(prev => ({
-            ...prev,
-            name: updatedUser.name,
-            avatar: null,
-            avatarPreview: updatedUser.avatar || null
-          }))
-        }
-        
-        // Toast is already shown by API.put
-      } else {
-        console.error('No user data in response:', response)
-        toast.error('Profile updated but user data not found in response')
-      }
-    } catch (error) {
-      console.error('Failed to save profile:', error)
-      toast.error(error.response?.data?.message || error.message || 'Failed to save profile')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
+  if (isLoading) return <PageSpinner />
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold">Settings</h1>
-        <p className="text-sm md:text-base text-muted-foreground">Manage your admin profile</p>
-      </div>
+    <div>
+      <PageHeader
+        title="Settings"
+        description="Configure your platform settings"
+        breadcrumbs={[{ label: 'Settings' }]}
+      />
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-2xl">
+        {/* General Settings */}
         <Card>
           <CardHeader>
-            <CardTitle>Admin Profile</CardTitle>
-            <CardDescription>Update your name and profile image</CardDescription>
+            <CardTitle>General Settings</CardTitle>
+            <CardDescription>Basic platform configuration</CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSave} className="space-y-6">
-              {/* Profile Image */}
-              <div className="space-y-2">
-                <Label>Profile Image</Label>
-                <div className="flex items-center gap-4">
-                  {formData.avatarPreview ? (
-                    <div className="relative inline-block">
-                      <img
-                        src={formData.avatarPreview}
-                        alt="Profile"
-                        className="w-24 h-24 rounded-full object-cover border-2 border-border"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleRemoveImage}
-                        className="absolute top-0 right-0 w-6 h-6 md:w-7 md:h-7 flex items-center justify-center bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 shadow-md border-2 border-background touch-manipulation"
-                        data-cursor="hover"
-                        aria-label="Remove profile image"
-                      >
-                        <X className="h-3 w-3 md:h-4 md:w-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center border-2 border-border">
-                      <User className="h-12 w-12 text-muted-foreground" />
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      disabled={loading}
-                      className="cursor-pointer"
-                      data-cursor="hover"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Upload a profile image (max 10MB)
-                    </p>
-                  </div>
-                </div>
-              </div>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="siteName">Site Name</Label>
+              <Input
+                id="siteName"
+                {...register('siteName')}
+                placeholder="StudySouq"
+              />
+            </div>
 
-              {/* Admin Name */}
-              <div className="space-y-2">
-                <Label htmlFor="name">Admin Name *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Enter your name"
-                  required
-                  data-cursor="hover"
-                />
-              </div>
-
-              {/* Email (Read-only) */}
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={user.email || ''}
-                  disabled
-                  className="bg-muted"
-                  data-cursor="not-allowed"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Email cannot be changed
-                </p>
-              </div>
-
-              <Button 
-                type="submit"
-                className="w-full touch-manipulation min-h-[44px] md:min-h-0" 
-                data-cursor="hover"
-                disabled={saving || loading}
-              >
-                <Save className="mr-2 h-4 w-4" />
-                {saving ? 'Saving...' : 'Save Profile'}
-              </Button>
-            </form>
+            <div className="space-y-2">
+              <Label htmlFor="siteDescription">Site Description</Label>
+              <Textarea
+                id="siteDescription"
+                {...register('siteDescription')}
+                placeholder="Educational platform for students"
+                rows={3}
+              />
+            </div>
           </CardContent>
         </Card>
-      </motion.div>
+
+        {/* Contact Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Contact Information</CardTitle>
+            <CardDescription>Email addresses for communication</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="contactEmail">Contact Email</Label>
+              <Input
+                id="contactEmail"
+                type="email"
+                {...register('contactEmail')}
+                placeholder="contact@example.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="supportEmail">Support Email</Label>
+              <Input
+                id="supportEmail"
+                type="email"
+                {...register('supportEmail')}
+                placeholder="support@example.com"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Access Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Access Control</CardTitle>
+            <CardDescription>Manage user access and registration</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="maintenanceMode">Maintenance Mode</Label>
+                <p className="text-sm text-neutral-500">
+                  Temporarily disable access for all non-admin users
+                </p>
+              </div>
+              <Switch
+                id="maintenanceMode"
+                checked={watchMaintenanceMode}
+                onCheckedChange={(checked) => setValue('maintenanceMode', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="registrationEnabled">Enable Registration</Label>
+                <p className="text-sm text-neutral-500">
+                  Allow new users to create accounts
+                </p>
+              </div>
+              <Switch
+                id="registrationEnabled"
+                checked={watchRegistrationEnabled}
+                onCheckedChange={(checked) => setValue('registrationEnabled', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="emailVerificationRequired">Require Email Verification</Label>
+                <p className="text-sm text-neutral-500">
+                  Users must verify their email before accessing content
+                </p>
+              </div>
+              <Switch
+                id="emailVerificationRequired"
+                checked={watchEmailVerification}
+                onCheckedChange={(checked) => setValue('emailVerificationRequired', checked)}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Free Tier Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Free Tier Limits</CardTitle>
+            <CardDescription>Configure limits for free users</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="freeTrialDays">Free Trial Days</Label>
+                <Input
+                  id="freeTrialDays"
+                  type="number"
+                  min="0"
+                  {...register('freeTrialDays', { valueAsNumber: true })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="maxFreeQuestions">Max Free Questions/Day</Label>
+                <Input
+                  id="maxFreeQuestions"
+                  type="number"
+                  min="0"
+                  {...register('maxFreeQuestions', { valueAsNumber: true })}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <Button type="submit" loading={updateMutation.isPending}>
+            <Save className="h-4 w-4 mr-2" />
+            Save Settings
+          </Button>
+        </div>
+      </form>
     </div>
   )
 }

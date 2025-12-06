@@ -11,14 +11,20 @@ import api from '../config/api';
  * Get all subjects
  */
 export const getSubjects = async () => {
+  console.log('=== GET SUBJECTS CALLED ===');
   try {
+    console.log('Fetching from: /subjects');
     const response = await api.get('/subjects');
+    console.log('Subjects response:', response.data);
     return {
       success: true,
       data: response.data.data || []
     };
   } catch (error) {
-    console.error('Get subjects error:', error);
+    console.error('=== GET SUBJECTS ERROR ===');
+    console.error('Error:', error);
+    console.error('Error response:', error.response?.data);
+    console.error('Error message:', error.message);
     return {
       success: false,
       message: error.response?.data?.message || 'Failed to fetch subjects',

@@ -1,406 +1,408 @@
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Plus, Search, Edit, Trash2 } from 'lucide-react'
-import { Button } from '../../components/ui/button'
-import { Input } from '../../components/ui/input'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { Plus, Pencil, Trash2, Layers } from 'lucide-react'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '../../components/ui/dialog'
-import { Label } from '../../components/ui/label'
-import { Textarea } from '../../components/ui/textarea'
-import {
+  Button,
+  Input,
+  Label,
+  Textarea,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../../components/ui/select'
-import { Card, CardContent, CardHeader } from '../../components/ui/card'
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Badge,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  ConfirmDialog,
+  Pagination,
+  SearchInput,
+  EmptyState,
+  PageSpinner,
+} from '@/components/ui'
+import { PageHeader } from '@/components/layout'
+import {
+  useSections,
+  useSubjects,
+  useCreateSection,
+  useUpdateSection,
+  useDeleteSection,
+} from '@/hooks/useApi'
+import { formatDate } from '@/lib/utils'
 import toast from 'react-hot-toast'
-import { useConfirm } from '../../components/ui/confirm-dialog'
-import { 
-  getSections, 
-  createSection, 
-  updateSection, 
-  deleteSection
-} from '../../services/admin/sectionsService'
-import { getSubjects } from '../../services/admin/subjectsService'
 
 export function Sections() {
-  const { confirm, ConfirmDialog } = useConfirm()
-  const [sections, setSections] = useState([])
-  const [subjects, setSubjects] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [subjectFilter, setSubjectFilter] = useState('all')
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [subjectFilter, setSubjectFilter] = useState('')
+  const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingSection, setEditingSection] = useState(null)
-  const [formData, setFormData] = useState({
-    sectionName: '',
-    subjectId: '',
-    description: '',
-    status: 'active',
-  })
-  const [submitting, setSubmitting] = useState(false)
+  const [deleteSection, setDeleteSection] = useState(null)
 
-  useEffect(() => {
-    let isMounted = true
-    
-    const load = async () => {
-      if (isMounted) {
-        await loadData()
-      }
-    }
-    
-    load()
-    
-    return () => {
-      isMounted = false
-    }
-  }, [])
-
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      const [sectionsResponse, subjectsResponse] = await Promise.all([
-        getSections({ limit: 1000 }),
-        getSubjects({ limit: 1000 })
-      ])
-      
-      // Handle response structure - API.get returns data directly or wrapped
-      const sectionsData = sectionsResponse?.sections || sectionsResponse || []
-      const subjectsData = subjectsResponse?.subjects || subjectsResponse || []
-      
-      setSections(Array.isArray(sectionsData) ? sectionsData : [])
-      setSubjects(Array.isArray(subjectsData) ? subjectsData : [])
-    } catch (error) {
-      console.error('Failed to load data:', error)
-      toast.error('Failed to load data')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Filter subjects to only show AS and A2 levels
-  // Backend returns "A-Level" for both AS and A2 subjects (stored as "a-level" in DB)
-  // So we need to check for "A-Level" or exclude "O-Level"
-  const eligibleSubjects = subjects.filter(
-    (subject) => {
-      const level = subject.level || ''
-      return level === 'AS' || 
-             level === 'A2' || 
-             level === 'A-Level' ||
-             level === 'a-level' ||
-             (level !== 'O-Level' && level !== 'igcse')
-    }
-  )
-
-  const filteredSections = sections.filter((section) => {
-    const matchesSearch =
-      section.sectionName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      section.subjectName.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesSubject = subjectFilter === 'all' || section.subjectId === subjectFilter
-    return matchesSearch && matchesSubject
+  const { data, isLoading } = useSections({
+    page,
+    limit: 10,
+    search,
+    subjectId: subjectFilter,
   })
 
-  const handleOpenDialog = (section) => {
+  // Get A-Level subjects only for the dropdown
+  const { data: subjectsData } = useSubjects({ limit: 100, level: 'A-Level' })
+
+  const createMutation = useCreateSection()
+  const updateMutation = useUpdateSection()
+  const deleteMutation = useDeleteSection()
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      name: '',
+      description: '',
+      subjectId: '',
+      isActive: true,
+      isPremium: false,
+      order: 0,
+    },
+  })
+
+  const watchSubjectId = watch('subjectId')
+  const watchIsActive = watch('isActive')
+  const watchIsPremium = watch('isPremium')
+
+  const openForm = (section = null) => {
     if (section) {
       setEditingSection(section)
-      setFormData({
-        sectionName: section.sectionName,
-        subjectId: section.subjectId,
-        description: section.description,
-        status: section.status,
+      reset({
+        name: section.name || section.sectionName,
+        description: section.description || '',
+        subjectId: section.subjectId || section.subject?._id,
+        isActive: section.isActive,
+        isPremium: section.isPremium || false,
+        order: section.order || 0,
       })
     } else {
       setEditingSection(null)
-      setFormData({ sectionName: '', subjectId: '', description: '', status: 'active' })
+      reset({
+        name: '',
+        description: '',
+        subjectId: '',
+        isActive: true,
+        isPremium: false,
+        order: 0,
+      })
     }
-    setIsDialogOpen(true)
+    setIsFormOpen(true)
   }
 
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false)
+  const closeForm = () => {
+    setIsFormOpen(false)
     setEditingSection(null)
-    setFormData({ sectionName: '', subjectId: '', description: '', status: 'active' })
+    reset()
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    // Validation
-    if (!formData.sectionName || !formData.sectionName.trim()) {
-      toast.error('Section name is required')
-      return
-    }
-
+  const onSubmit = async (formData) => {
     if (!formData.subjectId) {
       toast.error('Please select a subject')
       return
     }
-    
-    const subject = subjects.find((s) => s._id === formData.subjectId)
-    
-    if (!subject) {
-      toast.error('Subject not found')
-      return
-    }
 
-    if (subject.level === 'O-Level') {
-      toast.error('Sections cannot be created for O-Level subjects')
-      return
-    }
-
-    setSubmitting(true)
-    
     try {
-      if (editingSection) {
-        await updateSection(editingSection._id, formData)
-        // Toast is already shown by API client
-      } else {
-        await createSection(formData)
-        // Toast is already shown by API client
+      const payload = {
+        name: formData.name,
+        description: formData.description,
+        subjectId: formData.subjectId,
+        isActive: formData.isActive,
+        isPremium: formData.isPremium,
+        order: formData.order,
       }
-      await loadData()
-      handleCloseDialog()
+
+      if (editingSection) {
+        await updateMutation.mutateAsync({
+          id: editingSection._id,
+          data: payload,
+        })
+        toast.success('Subsection updated successfully')
+      } else {
+        await createMutation.mutateAsync(payload)
+        toast.success('Subsection created successfully')
+      }
+      closeForm()
     } catch (error) {
-      console.error('Failed to save section:', error)
-      toast.error(error.message || 'Failed to save section')
-    } finally {
-      setSubmitting(false)
+      toast.error(error.message || 'Operation failed')
     }
   }
 
-  const handleDelete = async (id) => {
-    const confirmed = await confirm(
-      'Are you sure you want to delete this section? This will also delete all associated lessons, notes, and questions.',
-      'Delete Section'
-    )
-    if (!confirmed) return
-    
+  const handleDelete = async () => {
+    if (!deleteSection) return
     try {
-      await deleteSection(id)
-      // Toast is already shown by API client
-      await loadData()
+      await deleteMutation.mutateAsync(deleteSection._id)
+      toast.success('Subsection deleted successfully')
+      setDeleteSection(null)
     } catch (error) {
-      console.error('Failed to delete section:', error)
-      toast.error(error.message || 'Failed to delete section')
+      toast.error(error.message || 'Delete failed')
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
+  if (isLoading) return <PageSpinner />
+
+  const sections = data?.sections || []
+  const totalPages = data?.totalPages || 1
+  const subjects = subjectsData?.subjects || []
 
   return (
-    <>
-      <ConfirmDialog />
-      <div className="space-y-6 p-4 md:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Sections</h1>
-          <p className="text-sm md:text-base text-muted-foreground">Organize AS & A2 subjects into sections</p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => handleOpenDialog()} data-cursor="hover" className="w-full sm:w-auto touch-manipulation min-h-[44px] md:min-h-0">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Section
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="w-[95vw] md:w-full">
-            <DialogHeader>
-              <DialogTitle>{editingSection ? 'Edit Section' : 'Add New Section'}</DialogTitle>
-              <DialogDescription>
-                {editingSection ? 'Update section details' : 'Create a new section for AS or A2 subjects'}
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="sectionName">Section Name *</Label>
-                  <Input
-                    id="sectionName"
-                    value={formData.sectionName}
-                    onChange={(e) => setFormData({ ...formData, sectionName: e.target.value })}
-                    placeholder="e.g., Pure Mathematics 1"
-                    required
-                    data-cursor="hover"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="subject">Subject (AS or A2 only) *</Label>
-                  <Select
-                    value={formData.subjectId}
-                    onValueChange={(value) => setFormData({ ...formData, subjectId: value })}
-                  >
-                    <SelectTrigger data-cursor="hover">
-                      <SelectValue placeholder="Select a subject" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {eligibleSubjects.length === 0 ? (
-                        <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                          No AS/A2 subjects available. Create subjects first.
-                        </div>
-                      ) : (
-                        eligibleSubjects.map((subject) => (
-                          <SelectItem key={subject._id} value={subject._id}>
-                            {subject.name} ({subject.level})
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    Only AS and A2 subjects are shown. O-Level subjects don't use sections.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description (Optional)</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Brief description of this section"
-                    data-cursor="hover"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status *</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, status: value })
-                    }
-                  >
-                    <SelectTrigger data-cursor="hover">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter className="flex-col sm:flex-row gap-2">
-                <Button type="button" variant="outline" onClick={handleCloseDialog} className="w-full sm:w-auto touch-manipulation min-h-[44px] md:min-h-0">
-                  Cancel
-                </Button>
-                <Button type="submit" data-cursor="hover" disabled={submitting || eligibleSubjects.length === 0} className="w-full sm:w-auto touch-manipulation min-h-[44px] md:min-h-0">
-                  {submitting ? 'Saving...' : (editingSection ? 'Update' : 'Create')}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+    <div>
+      <PageHeader
+        title="Subsections"
+        description="Manage subsections for A-Level subjects"
+        breadcrumbs={[{ label: 'Subsections' }]}
+        action={
+          <Button onClick={() => openForm()}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Subsection
+          </Button>
+        }
+      />
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search subsections..."
+          className="sm:w-80"
+        />
+        <Select 
+          value={subjectFilter || 'all'} 
+          onValueChange={(value) => setSubjectFilter(value === 'all' ? '' : value)}
+        >
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="All Subjects" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Subjects</SelectItem>
+            {subjects.map((subject) => (
+              <SelectItem key={subject._id} value={subject._id}>
+                {subject.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      {/* Table */}
+      {sections.length === 0 ? (
+        <EmptyState
+          icon={Layers}
+          title="No subsections found"
+          description="Subsections are used to organize lessons within A-Level subjects"
+          action={
+            <Button onClick={() => openForm()}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Subsection
+            </Button>
+          }
+        />
+      ) : (
+        <>
+          <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Subject</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Premium</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sections.map((section) => (
+                  <TableRow key={section._id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{section.name || section.sectionName}</div>
+                        {section.description && (
+                          <div className="text-sm text-neutral-500 line-clamp-1">
+                            {section.description}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {section.subjectName || section.subject?.name || '-'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={section.isActive ? 'success' : 'secondary'}>
+                        {section.isActive ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {section.isPremium && <Badge>Premium</Badge>}
+                    </TableCell>
+                    <TableCell className="text-neutral-500">
+                      {formatDate(section.createdAt)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openForm(section)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setDeleteSection(section)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className="mt-4">
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
+          </div>
+        </>
+      )}
+
+      {/* Create/Edit Dialog */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>
+              {editingSection ? 'Edit Subsection' : 'Create Subsection'}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="subjectId">Subject *</Label>
+              <Select
+                value={watchSubjectId}
+                onValueChange={(value) => setValue('subjectId', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an A-Level subject" />
+                </SelectTrigger>
+                <SelectContent>
+                  {subjects.map((subject) => (
+                    <SelectItem key={subject._id} value={subject._id}>
+                      {subject.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {subjects.length === 0 && (
+                <p className="text-sm text-amber-600">
+                  No A-Level subjects found. Create an A-Level subject first.
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="name">Name *</Label>
               <Input
-                placeholder="Search sections..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-                data-cursor="hover"
+                id="name"
+                {...register('name', { required: 'Name is required' })}
+                placeholder="e.g., Mechanics"
+              />
+              {errors.name && (
+                <p className="text-sm text-red-600">{errors.name.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                {...register('description')}
+                placeholder="Brief description"
+                rows={3}
               />
             </div>
-            <Select value={subjectFilter} onValueChange={setSubjectFilter}>
-              <SelectTrigger className="w-full md:w-[200px]" data-cursor="hover">
-                <SelectValue placeholder="Filter by subject" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Subjects</SelectItem>
-                {eligibleSubjects.map((subject) => (
-                  <SelectItem key={subject._id} value={subject._id}>
-                    {subject.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {filteredSections.map((section, index) => (
-              <motion.div
-                key={section._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-lg border p-4 hover:bg-accent/50 transition-colors"
+
+            <div className="space-y-2">
+              <Label htmlFor="order">Order</Label>
+              <Input
+                id="order"
+                type="number"
+                {...register('order', { valueAsNumber: true })}
+                placeholder="0"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Label htmlFor="isActive">Active</Label>
+              <Switch
+                id="isActive"
+                checked={watchIsActive}
+                onCheckedChange={(checked) => setValue('isActive', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Label htmlFor="isPremium">Premium Content</Label>
+              <Switch
+                id="isPremium"
+                checked={watchIsPremium}
+                onCheckedChange={(checked) => setValue('isPremium', checked)}
+              />
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={closeForm}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                loading={createMutation.isPending || updateMutation.isPending}
               >
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-semibold text-sm md:text-base break-words">{section.sectionName}</h3>
-                    <span
-                      className={`px-2 py-0.5 rounded text-xs ${
-                        section.status === 'active'
-                          ? 'bg-green-500/10 text-green-500'
-                          : 'bg-gray-500/10 text-gray-500'
-                      }`}
-                    >
-                      {section.status}
-                    </span>
-                  </div>
-                  <p className="text-xs md:text-sm text-muted-foreground break-words">Subject: {section.subjectName}</p>
-                  {section.description && (
-                    <p className="text-xs md:text-sm text-muted-foreground mt-1 break-words">{section.description}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Created: {new Date(section.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 self-start sm:self-auto">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleOpenDialog(section)}
-                    data-cursor="hover"
-                    className="touch-manipulation min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(section._id)}
-                    data-cursor="hover"
-                    className="touch-manipulation min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0"
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </motion.div>
-            ))}
-            {filteredSections.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                {sections.length === 0 
-                  ? 'No sections found. Create sections for AS and A2 subjects.' 
-                  : 'No sections found matching your search.'}
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                {editingSection ? 'Update' : 'Create'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={!!deleteSection}
+        onOpenChange={() => setDeleteSection(null)}
+        title="Delete Subsection"
+        description={`Are you sure you want to delete "${deleteSection?.name || deleteSection?.sectionName}"? This action cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={handleDelete}
+        loading={deleteMutation.isPending}
+      />
     </div>
-    </>
   )
 }
-
-
-

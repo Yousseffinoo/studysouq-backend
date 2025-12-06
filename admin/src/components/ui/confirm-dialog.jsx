@@ -1,4 +1,3 @@
-import { useState, useCallback } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -9,57 +8,33 @@ import {
 } from './dialog'
 import { Button } from './button'
 
-let confirmResolver = null
-
-export const useConfirm = () => {
-  const [isOpen, setIsOpen] = useState(false)
-  const [message, setMessage] = useState('')
-  const [title, setTitle] = useState('Confirm')
-
-  const confirm = useCallback((msg, titleText = 'Confirm') => {
-    return new Promise((resolve) => {
-      setMessage(msg)
-      setTitle(titleText)
-      setIsOpen(true)
-      confirmResolver = resolve
-    })
-  }, [])
-
-  const handleConfirm = () => {
-    setIsOpen(false)
-    if (confirmResolver) {
-      confirmResolver(true)
-      confirmResolver = null
-    }
-  }
-
-  const handleCancel = () => {
-    setIsOpen(false)
-    if (confirmResolver) {
-      confirmResolver(false)
-      confirmResolver = null
-    }
-  }
-
-  const ConfirmDialog = () => (
-    <Dialog open={isOpen} onOpenChange={handleCancel}>
-      <DialogContent>
+export function ConfirmDialog({
+  open,
+  onOpenChange,
+  title = 'Are you sure?',
+  description = 'This action cannot be undone.',
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  onConfirm,
+  loading = false,
+  variant = 'destructive',
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{message}</DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={handleCancel}>
-            Cancel
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+            {cancelText}
           </Button>
-          <Button onClick={handleConfirm}>
-            OK
+          <Button variant={variant} onClick={onConfirm} loading={loading}>
+            {confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   )
-
-  return { confirm, ConfirmDialog }
 }
-

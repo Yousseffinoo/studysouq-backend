@@ -1,69 +1,52 @@
-import { useEffect } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Sidebar } from '../sidebar/Sidebar'
-import { Topbar } from '../topbar/Topbar'
-import { useStore } from '../../store/useStore'
-import { useAdminAuth } from '../../hooks/useAdminAuth'
-import { CustomCursor } from '../cursor/CustomCursor'
-import { Toaster } from '../ui/toaster'
-import { cn } from '../../lib/utils'
+import { useState, useEffect } from 'react'
+import { Outlet, Navigate, useNavigate } from 'react-router-dom'
+import { Sidebar } from './Sidebar'
+import { Topbar } from './Topbar'
+import { PageSpinner } from '@/components/ui'
+import { useAuthStore } from '@/store/authStore'
+import toast from 'react-hot-toast'
 
 export function DashboardLayout() {
-  const { sidebarOpen, theme, setTheme } = useStore()
-  const { isAuthenticated, isAdmin, isLoading } = useAdminAuth()
   const navigate = useNavigate()
+  const { user, isAuthenticated, isLoading, logout, checkAuth } = useAuthStore()
 
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || !isAdmin)) {
-      navigate('/login')
-    }
-  }, [isAuthenticated, isAdmin, isLoading, navigate])
+    checkAuth()
+  }, [checkAuth])
 
-  useEffect(() => {
-    // Apply theme
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-  }, [theme])
+  const handleLogout = async () => {
+    await logout()
+    toast.success('Logged out successfully')
+    navigate('/login')
+  }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <PageSpinner />
       </div>
     )
   }
 
-  if (!isAuthenticated || !isAdmin) {
-    return null
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  if (user?.role !== 'admin') {
+    toast.error('Admin access required')
+    return <Navigate to="/login" replace />
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <CustomCursor />
-      <Sidebar />
-      <div
-        className={cn(
-          'transition-all duration-300',
-          sidebarOpen ? 'md:ml-[260px]' : 'md:ml-20'
-        )}
-      >
-        <Topbar />
-        <motion.main
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="min-h-[calc(100vh-4rem)]"
-        >
+    <div className="min-h-screen bg-neutral-50">
+      <Sidebar onLogout={handleLogout} />
+      <div className="ml-64 transition-all duration-300">
+        <Topbar user={user} />
+        <main className="p-6">
           <Outlet />
-        </motion.main>
+        </main>
       </div>
-      <Toaster />
     </div>
   )
 }
-
-
-
-
-
 

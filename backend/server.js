@@ -68,10 +68,14 @@ app.use(cookieParser());
 // Compression middleware
 app.use(compression());
 
-// Logging middleware (only in development)
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-}
+// Logging middleware
+app.use(morgan('dev'));
+
+// Log all admin requests for debugging
+app.use('/api/admin', (req, res, next) => {
+  console.log(`[ADMIN] ${req.method} ${req.originalUrl}`);
+  next();
+});
 
 // Serve static files (uploads folder)
 import path from 'path';
@@ -205,4 +209,6 @@ console.log("PAYMOB_HMAC:", process.env.PAYMOB_HMAC);
 
 
 export default app;
+
+
 

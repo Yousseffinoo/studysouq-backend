@@ -304,8 +304,14 @@ export const API = {
    * PUT request
    */
   async put(url, data, config = {}) {
+    console.log('=== API PUT REQUEST ===')
+    console.log('URL:', url)
+    console.log('Data:', data)
+    console.log('Token:', localStorage.getItem('accessToken')?.substring(0, 20) + '...')
+    
     try {
       const response = await apiClient.put(url, data, config)
+      console.log('Response:', response.data)
       
       if (response.data.message) {
         toast.success(response.data.message)
@@ -313,6 +319,9 @@ export const API = {
       
       return response.data.data !== undefined ? response.data.data : response.data
     } catch (error) {
+      console.error('=== API PUT ERROR ===')
+      console.error('Error:', error)
+      console.error('Response:', error.response?.data)
       throw error
     }
   },

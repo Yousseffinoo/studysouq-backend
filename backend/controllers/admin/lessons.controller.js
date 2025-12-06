@@ -331,62 +331,55 @@ export const createLesson = async (req, res) => {
 // @route   PUT /api/admin/lessons/:id
 // @access  Admin
 export const updateLesson = async (req, res) => {
+  console.log('=== UPDATE LESSON CALLED ===');
+  console.log('Lesson ID:', req.params.id);
+  console.log('Request body:', JSON.stringify(req.body, null, 2));
+  
   try {
-    // Handle subject - convert ID/slug to slug string if needed
-    let subjectValue = req.body.subject;
-    if (subjectValue) {
-      // Check if it's an ObjectId or slug
-      let subject = null;
-      if (mongoose.Types.ObjectId.isValid(subjectValue)) {
-        // It's an ObjectId, fetch the subject to get slug
-        subject = await Subject.findById(subjectValue).lean();
-      } else {
-        // It's already a slug or string, use as is
-        // Verify it exists in Subject model
-        subject = await Subject.findOne({ 
-          $or: [
-            { _id: subjectValue },
-            { slug: subjectValue },
-            { name: { $regex: new RegExp(`^${subjectValue}$`, 'i') } }
-          ]
-        }).lean();
-      }
-
-      if (subject) {
-        // Use slug if available, otherwise generate from name or use the value as-is
-        if (subject.slug) {
-          subjectValue = subject.slug;
-        } else if (subject.name) {
-          // Generate slug from name if slug doesn't exist
-          subjectValue = subject.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-        } else {
-          // Fallback to the original value if subject exists but has no slug or name
-          subjectValue = subjectValue;
-        }
-      } else {
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid subject. Subject not found in database.'
-        });
-      }
+    // First, find the existing lesson
+    const existingLesson = await Lesson.findById(req.params.id);
+    if (!existingLesson) {
+      return res.status(404).json({
+        success: false,
+        message: 'Lesson not found'
+      });
     }
 
-    // Remove class field if present (user wants it removed)
-    const { class: classField, ...updateDataWithoutClass } = req.body;
+    // Build update object with only provided fields
+    const updateFields = {};
     
-    const updateData = {
-      ...updateDataWithoutClass,
-      updatedBy: req.user._id
-    };
-
-    // Only update subject if it was provided
-    if (subjectValue) {
-      updateData.subject = subjectValue;
+    // Basic fields
+    if (req.body.title !== undefined) updateFields.title = req.body.title;
+    if (req.body.description !== undefined) updateFields.description = req.body.description;
+    if (req.body.content !== undefined) updateFields.content = req.body.content;
+    if (req.body.chapter !== undefined) updateFields.chapter = req.body.chapter;
+    if (req.body.order !== undefined) updateFields.order = req.body.order;
+    if (req.body.difficulty !== undefined) updateFields.difficulty = req.body.difficulty;
+    if (req.body.duration !== undefined) updateFields.duration = req.body.duration;
+    if (req.body.isPremium !== undefined) updateFields.isPremium = req.body.isPremium;
+    if (req.body.isVisible !== undefined) updateFields.isVisible = req.body.isVisible;
+    if (req.body.videoUrl !== undefined) updateFields.videoUrl = req.body.videoUrl;
+    
+    // Handle subject - just use it directly (already validated by frontend)
+    if (req.body.subject) {
+      updateFields.subject = req.body.subject;
     }
+
+    // Handle notes - update specific fields
+    if (req.body.notes) {
+      updateFields['notes.content'] = req.body.notes.content || '';
+      updateFields['notes.summary'] = req.body.notes.summary || '';
+      updateFields['notes.lastUpdated'] = new Date();
+    }
+
+    // Set updatedBy
+    updateFields.updatedBy = req.user._id;
+
+    console.log('Update fields:', JSON.stringify(updateFields, null, 2));
 
     const lesson = await Lesson.findByIdAndUpdate(
       req.params.id,
-      updateData,
+      { $set: updateFields },
       { new: true, runValidators: true }
     );
 
@@ -397,13 +390,19 @@ export const updateLesson = async (req, res) => {
       });
     }
 
-    await createActivityLog(
-      req.user,
-      'lesson_updated',
-      'lesson',
-      lesson._id,
-      { title: lesson.title }
-    );
+    // Create activity log (non-blocking) - wrapped in try/catch to never break workflow
+    try {
+      await createActivityLog(
+        req.user,
+        'lesson_updated',
+        'lesson',
+        lesson._id,
+        { title: lesson.title }
+      );
+    } catch (logError) {
+      console.error("ERROR ORIGIN: createActivityLog in updateLesson", logError);
+      // Continue even if activity log fails
+    }
 
     res.status(200).json({
       success: true,
@@ -411,14 +410,24 @@ export const updateLesson = async (req, res) => {
       data: lesson
     });
   } catch (error) {
-    console.error("ERROR ORIGIN: updateLesson", error.stack || error);
+    console.error("ERROR ORIGIN: updateLesson");
+    console.error("Error details:", error);
+    console.error("Error stack:", error.stack);
     if (error.name === 'ValidationError') {
-      return res.status(400).json({ success: false, message: error.message });
+      console.error("Validation errors:", error.errors);
+      return res.status(400).json({ 
+        success: false, 
+        message: error.message,
+        errors: Object.keys(error.errors).map(key => ({
+          field: key,
+          message: error.errors[key].message
+        }))
+      });
     }
     res.status(500).json({
       success: false,
       message: 'Error updating lesson',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: error.message
     });
   }
 };
@@ -439,13 +448,19 @@ export const deleteLesson = async (req, res) => {
 
     await lesson.deleteOne();
 
-    await createActivityLog(
-      req.user,
-      'lesson_deleted',
-      'lesson',
-      lesson._id,
-      { title: lesson.title }
-    );
+    // Create activity log (non-blocking) - wrapped in try/catch to never break workflow
+    try {
+      await createActivityLog(
+        req.user,
+        'lesson_deleted',
+        'lesson',
+        lesson._id,
+        { title: lesson.title }
+      );
+    } catch (logError) {
+      console.error("ERROR ORIGIN: createActivityLog in deleteLesson", logError);
+      // Continue even if activity log fails
+    }
 
     res.status(200).json({
       success: true,
@@ -496,3 +511,4 @@ export const getLessonStats = async (req, res) => {
   }
 };
 
+ 

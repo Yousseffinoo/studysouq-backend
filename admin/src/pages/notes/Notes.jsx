@@ -1,684 +1,544 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Search, Edit, Trash2, X, Upload, ImageIcon } from 'lucide-react'
-import { Button } from '../../components/ui/button'
-import { Input } from '../../components/ui/input'
-import { Label } from '../../components/ui/label'
-import { Textarea } from '../../components/ui/textarea'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { Plus, Pencil, Trash2, StickyNote } from 'lucide-react'
 import {
+  Button,
+  Input,
+  Label,
+  Textarea,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../../components/ui/select'
-import { Card, CardContent, CardHeader } from '../../components/ui/card'
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Badge,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  ConfirmDialog,
+  Pagination,
+  SearchInput,
+  EmptyState,
+  PageSpinner,
+} from '@/components/ui'
+import { PageHeader } from '@/components/layout'
+import { RichTextEditor } from '@/components/editor/RichTextEditor'
+import {
+  useNotes,
+  useLessons,
+  useCreateNote,
+  useUpdateNote,
+  useDeleteNote,
+} from '@/hooks/useApi'
+import { formatDate, truncate } from '@/lib/utils'
 import toast from 'react-hot-toast'
-import { useConfirm } from '../../components/ui/confirm-dialog'
-import { 
-  getNotes, 
-  createNote, 
-  updateNote, 
-  deleteNote
-} from '../../services/admin/notesService'
-import { getLessons } from '../../services/admin/lessonsService'
-import { uploadImage } from '../../services/admin/imagesService'
+
+const NOTE_TYPES = [
+  { value: 'summary', label: 'Summary' },
+  { value: 'formula', label: 'Formula' },
+  { value: 'definition', label: 'Definition' },
+  { value: 'theorem', label: 'Theorem' },
+  { value: 'example', label: 'Example' },
+  { value: 'tips', label: 'Tips' },
+]
+
+const SUBJECTS = [
+  { value: 'physics', label: 'Physics' },
+  { value: 'chemistry', label: 'Chemistry' },
+  { value: 'mathematics', label: 'Mathematics' },
+  { value: 'biology', label: 'Biology' },
+  { value: 'computer-science', label: 'Computer Science' },
+]
+
+const CLASSES = [
+  { value: '9th', label: '9th Grade' },
+  { value: '10th', label: '10th Grade' },
+  { value: '11th', label: '11th Grade' },
+  { value: '12th', label: '12th Grade' },
+]
 
 export function Notes() {
-  const { confirm, ConfirmDialog } = useConfirm()
-  const [notes, setNotes] = useState([])
-  const [lessons, setLessons] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isSlideOverOpen, setIsSlideOverOpen] = useState(false)
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [subjectFilter, setSubjectFilter] = useState('')
+  const [typeFilter, setTypeFilter] = useState('')
+  const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingNote, setEditingNote] = useState(null)
-  const [formData, setFormData] = useState({
-    lessonId: '',
-    notesText: '',
-    notesImages: [],
-    isPremium: true,
-    class: '9th', // Add class field
+  const [deleteNote, setDeleteNote] = useState(null)
+
+  const { data, isLoading } = useNotes({
+    page,
+    limit: 10,
+    search,
+    subject: subjectFilter,
+    type: typeFilter,
   })
-  const [imageFiles, setImageFiles] = useState([])
-  const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => {
-    let isMounted = true
-    
-    const load = async () => {
-      if (isMounted) {
-        await loadData()
-      }
-    }
-    
-    load()
-    
-    return () => {
-      isMounted = false
-    }
-  }, [])
+  const { data: lessonsData } = useLessons({ limit: 100 })
 
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      // Use smaller limits to avoid timeout - load in batches if needed
-      const [notesResponse, lessonsResponse] = await Promise.all([
-        getNotes({ limit: 100, page: 1 }),
-        getLessons({ limit: 100, page: 1 })
-      ])
-      
-      // Handle response structure - Backend returns { success: true, data: { notes: [...], ... } }
-      // API.get unwraps to return data directly
-      const notesData = notesResponse?.notes || (Array.isArray(notesResponse) ? notesResponse : [])
-      const lessonsData = lessonsResponse?.lessons || (Array.isArray(lessonsResponse) ? lessonsResponse : [])
-      
-      // Map backend fields to frontend format
-      const mappedNotes = (Array.isArray(notesData) ? notesData : []).map(note => ({
-        ...note,
-        notesText: note.content || note.notesText || '', // Map content to notesText
-        lessonName: note.lesson?.title || note.lessonName || 'Unknown Lesson', // Map lesson.title to lessonName
-        lessonId: note.lesson?._id || note.lesson || note.lessonId || '', // Map lesson._id to lessonId
-        notesImages: note.images || note.notesImages || [] // Map images to notesImages
-      }))
-      
-      setNotes(mappedNotes)
-      setLessons(Array.isArray(lessonsData) ? lessonsData : [])
-    } catch (error) {
-      console.error('Failed to load data:', error)
-      
-      // Provide more specific error messages
-      let errorMessage = 'Failed to load data'
-      if (error.message?.includes('timeout')) {
-        errorMessage = 'Request timed out. Please try again or check your connection.'
-      } else if (error.response?.status === 500) {
-        errorMessage = 'Server error. Please try again later.'
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message
-      }
-      
-      toast.error(errorMessage)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const createMutation = useCreateNote()
+  const updateMutation = useUpdateNote()
+  const deleteMutation = useDeleteNote()
 
-  const filteredNotes = notes.filter(
-    (note) => {
-      if (!note) return false
-      const query = (searchQuery || '').toLowerCase()
-      if (!query) return true // Show all if no search query
-      const lessonName = (note.lessonName || note.lesson?.title || '').toLowerCase()
-      const notesText = (note.notesText || note.content || '').toLowerCase()
-      return lessonName.includes(query) || notesText.includes(query)
-    }
-  )
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      title: '',
+      content: '',
+      summary: '',
+      subject: 'physics',
+      class: '9th',
+      chapter: 1,
+      type: 'summary',
+      lesson: '',
+      tags: '',
+      isPremium: false,
+      isVisible: true,
+    },
+  })
 
-  const handleOpenSlideOver = (note) => {
+  const watchSubject = watch('subject')
+  const watchClass = watch('class')
+  const watchType = watch('type')
+  const watchLesson = watch('lesson')
+  const watchContent = watch('content')
+  const watchIsPremium = watch('isPremium')
+  const watchIsVisible = watch('isVisible')
+
+  const openForm = (note = null) => {
     if (note) {
       setEditingNote(note)
-      setFormData({
-        lessonId: note.lessonId || note.lesson?._id || note.lesson || '',
-        notesText: note.notesText || note.content || '',
-        notesImages: note.notesImages || note.images || [],
-        isPremium: note.isPremium !== undefined ? note.isPremium : true,
+      reset({
+        title: note.title,
+        content: note.content,
+        summary: note.summary || '',
+        subject: note.subject || 'physics',
         class: note.class || '9th',
+        chapter: note.chapter || 1,
+        type: note.type || 'summary',
+        lesson: note.lesson?._id || note.lesson || '',
+        tags: Array.isArray(note.tags) ? note.tags.join(', ') : '',
+        isPremium: note.isPremium || false,
+        isVisible: note.isVisible !== false,
       })
     } else {
       setEditingNote(null)
-      setFormData({
-        lessonId: '',
-        notesText: '',
-        notesImages: [],
-        isPremium: true,
+      reset({
+        title: '',
+        content: '',
+        summary: '',
+        subject: 'physics',
         class: '9th',
-      })
-    }
-    setImageFiles([])
-    setIsSlideOverOpen(true)
-  }
-
-  const handleCloseSlideOver = () => {
-    setIsSlideOverOpen(false)
-    setEditingNote(null)
-    setFormData({
-      lessonId: '',
-      notesText: '',
-      notesImages: [],
-      isPremium: true,
-      class: '9th',
-    })
-    setImageFiles([])
-  }
-
-  const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files || [])
-    if (files.length > 0) {
-      setImageFiles((prev) => [...prev, ...files])
-      // Convert to base64 for preview (in production, you'd upload to cloud storage)
-      files.forEach((file) => {
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          setFormData((prev) => ({
-            ...prev,
-            notesImages: [...prev.notesImages, reader.result],
-          }))
-        }
-        reader.readAsDataURL(file)
-      })
-      toast.success('Images added successfully')
-    }
-  }
-
-  const handleRemoveImage = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      notesImages: prev.notesImages.filter((_, i) => i !== index),
-    }))
-    setImageFiles((prev) => prev.filter((_, i) => i !== index))
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    // Validation
-    if (!formData.lessonId) {
-      toast.error('Please select a lesson')
-      return
-    }
-
-    if (!formData.notesText || !formData.notesText.trim()) {
-      toast.error('Notes content is required')
-      return
-    }
-
-    const lesson = lessons.find((l) => l._id === formData.lessonId)
-    
-    if (!lesson) {
-      toast.error('Lesson not found')
-      return
-    }
-
-    setSubmitting(true)
-    
-    try {
-      // Validate and normalize subject to match Note model enum
-      const validSubjects = ['physics', 'chemistry', 'mathematics', 'biology', 'computer-science']
-      let normalizedSubject = (lesson.subject || 'physics').toLowerCase().trim()
-      
-      // Map common variations to valid enum values
-      const subjectMap = {
-        'math': 'mathematics',
-        'maths': 'mathematics',
-        'bio': 'biology',
-        'cs': 'computer-science',
-        'computer science': 'computer-science'
-      }
-      
-      if (subjectMap[normalizedSubject]) {
-        normalizedSubject = subjectMap[normalizedSubject]
-      }
-      
-      // If subject doesn't match enum, default to physics
-      if (!validSubjects.includes(normalizedSubject)) {
-        console.warn(`Subject "${lesson.subject}" doesn't match enum, defaulting to "physics"`)
-        normalizedSubject = 'physics'
-      }
-      
-      // Ensure chapter is a number
-      const chapterNumber = Number(lesson.chapter)
-      if (isNaN(chapterNumber) || chapterNumber < 1) {
-        toast.error('Lesson must have a valid chapter number')
-        setSubmitting(false)
-        return
-      }
-      
-      // Validate class enum
-      const validClasses = ['9th', '10th', '11th', '12th']
-      const selectedClass = formData.class || '9th'
-      if (!validClasses.includes(selectedClass)) {
-        toast.error('Invalid class selected')
-        setSubmitting(false)
-        return
-      }
-      
-      // Upload new image files first (if any)
-      const uploadedImageUrls = []
-      if (imageFiles && imageFiles.length > 0) {
-        toast.loading(`Uploading ${imageFiles.length} image(s)...`, { id: 'upload-images' })
-        try {
-          for (let i = 0; i < imageFiles.length; i++) {
-            const file = imageFiles[i]
-            try {
-              const uploadResult = await uploadImage({
-                image: file,
-                title: `Note image - ${file.name}`,
-                category: 'other' // Use 'other' as 'notes' might not be in enum
-              })
-              
-              // Handle different response structures
-              let imageUrl = null
-              let imagePublicId = null
-              let imageTitle = file.name
-              
-              if (uploadResult) {
-                // Direct response structure
-                if (uploadResult.url) {
-                  imageUrl = uploadResult.url
-                  imagePublicId = uploadResult.publicId || ''
-                  imageTitle = uploadResult.title || file.name
-                }
-                // Nested data structure (from API.upload)
-                else if (uploadResult.data) {
-                  imageUrl = uploadResult.data.url
-                  imagePublicId = uploadResult.data.publicId || ''
-                  imageTitle = uploadResult.data.title || file.name
-                }
-              }
-              
-              if (imageUrl) {
-                uploadedImageUrls.push({
-                  url: imageUrl,
-                  caption: imageTitle,
-                  publicId: imagePublicId
-                })
-              } else {
-                console.warn('Upload result missing URL:', uploadResult)
-                toast.error(`Failed to get URL for ${file.name}`, { id: 'upload-images' })
-              }
-            } catch (uploadError) {
-              console.error('Failed to upload image:', uploadError)
-              const errorMsg = uploadError.response?.data?.message || uploadError.message || 'Upload failed'
-              toast.error(`Failed to upload ${file.name}: ${errorMsg}`, { id: 'upload-images' })
-            }
-          }
-          toast.dismiss('upload-images')
-          if (uploadedImageUrls.length > 0) {
-            toast.success(`${uploadedImageUrls.length} image(s) uploaded successfully`)
-          } else if (imageFiles.length > 0) {
-            toast.error('No images were uploaded successfully')
-            setSubmitting(false)
-            return
-          }
-        } catch (error) {
-          toast.dismiss('upload-images')
-          console.error('Error uploading images:', error)
-          toast.error('Error uploading images. Please try again.')
-          setSubmitting(false)
-          return
-        }
-      }
-      
-      // Combine uploaded images with existing images (URLs only, skip base64)
-      const existingImages = (formData.notesImages || [])
-        .filter((img) => {
-          if (!img) return false
-          const imgStr = typeof img === 'string' ? img : img.url || ''
-          // Only include URLs (not base64 data URIs)
-          return imgStr.length > 0 && !imgStr.startsWith('data:image')
-        })
-        .map((img) => {
-          const imgStr = typeof img === 'string' ? img : img.url || img
-          return {
-            url: imgStr,
-            caption: (typeof img === 'object' && img.caption) || '',
-            publicId: (typeof img === 'object' && img.publicId) || ''
-          }
-        })
-      
-      // Combine all images
-      const formattedImages = [...uploadedImageUrls, ...existingImages]
-      
-      // Map frontend form data to backend format
-      const noteData = {
-        title: lesson.title || 'Untitled Note', // Use lesson title as note title
-        content: formData.notesText.trim(), // Map notesText to content
-        lesson: formData.lessonId, // Map lessonId to lesson
-        subject: normalizedSubject, // Normalized subject
-        class: selectedClass, // Use form class field
-        chapter: chapterNumber, // Ensure it's a number
-        type: 'summary', // Default type
-        isPremium: formData.isPremium !== undefined ? formData.isPremium : true,
+        chapter: 1,
+        type: 'summary',
+        lesson: '',
+        tags: '',
+        isPremium: false,
         isVisible: true,
-        // Map images - backend expects array of {url, caption, publicId}
-        images: formattedImages
-      }
-      
-      if (editingNote) {
-        await updateNote(editingNote._id, noteData)
-        // Toast is already shown by API client
-      } else {
-        await createNote(noteData)
-        // Toast is already shown by API client
-      }
-      await loadData()
-      handleCloseSlideOver()
-    } catch (error) {
-      console.error('Failed to save note:', error)
-      
-      // Handle validation errors with detailed messages
-      let errorMessage = 'Failed to save note'
-      
-      if (error.response?.data) {
-        const errorData = error.response.data
-        
-        // Handle array of error messages
-        if (errorData.errors && Array.isArray(errorData.errors)) {
-          errorMessage = errorData.errors.join(', ')
-        } 
-        // Handle single error message
-        else if (errorData.message) {
-          errorMessage = errorData.message
-        }
-        // Handle field-specific errors
-        else if (errorData.fieldErrors) {
-          const fieldMessages = Object.values(errorData.fieldErrors).join(', ')
-          errorMessage = fieldMessages || errorMessage
-        }
-      } else if (error.message) {
-        errorMessage = error.message
-      }
-      
-      toast.error(errorMessage)
-    } finally {
-      setSubmitting(false)
+      })
     }
+    setIsFormOpen(true)
   }
 
-  const handleDelete = async (id) => {
-    const confirmed = await confirm(
-      'Are you sure you want to delete this note?',
-      'Delete Note'
-    )
-    if (!confirmed) return
-    
+  const closeForm = () => {
+    setIsFormOpen(false)
+    setEditingNote(null)
+    reset()
+  }
+
+  const onSubmit = async (formData) => {
     try {
-      await deleteNote(id)
-      // Toast is already shown by API client
-      await loadData()
+      const payload = {
+        ...formData,
+        tags: formData.tags
+          ? formData.tags.split(',').map((t) => t.trim()).filter(Boolean)
+          : [],
+        lesson: formData.lesson || null,
+      }
+
+      if (editingNote) {
+        await updateMutation.mutateAsync({
+          id: editingNote._id,
+          data: payload,
+        })
+        toast.success('Note updated successfully')
+      } else {
+        await createMutation.mutateAsync(payload)
+        toast.success('Note created successfully')
+      }
+      closeForm()
     } catch (error) {
-      console.error('Failed to delete note:', error)
-      toast.error(error.message || 'Failed to delete note')
+      toast.error(error.message || 'Operation failed')
     }
   }
 
-  const stripHtml = (html) => {
-    const tmp = document.createElement('DIV')
-    tmp.innerHTML = html
-    return tmp.textContent || tmp.innerText || ''
+  const handleDelete = async () => {
+    if (!deleteNote) return
+    try {
+      await deleteMutation.mutateAsync(deleteNote._id)
+      toast.success('Note deleted successfully')
+      setDeleteNote(null)
+    } catch (error) {
+      toast.error(error.message || 'Delete failed')
+    }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
+  if (isLoading) return <PageSpinner />
+
+  const notes = data?.notes || []
+  const totalPages = data?.totalPages || 1
+  const lessons = lessonsData?.lessons || []
 
   return (
-    <>
-      <ConfirmDialog />
-      <div className="space-y-6 p-4 md:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Notes</h1>
-          <p className="text-sm md:text-base text-muted-foreground">Manage premium lesson notes</p>
-        </div>
-        <Button onClick={() => handleOpenSlideOver()} data-cursor="hover" className="w-full sm:w-auto touch-manipulation min-h-[44px] md:min-h-0">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Note
-        </Button>
+    <div>
+      <PageHeader
+        title="Standalone Notes"
+        description="Create general notes not tied to specific lessons. For lesson-specific notes, edit them within the Lessons page."
+        breadcrumbs={[{ label: 'Notes' }]}
+        action={
+          <Button onClick={() => openForm()}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Note
+          </Button>
+        }
+      />
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search notes..."
+          className="sm:w-80"
+        />
+        <Select 
+          value={subjectFilter || 'all'} 
+          onValueChange={(value) => setSubjectFilter(value === 'all' ? '' : value)}
+        >
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="All Subjects" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Subjects</SelectItem>
+            {SUBJECTS.map((s) => (
+              <SelectItem key={s.value} value={s.value}>
+                {s.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select 
+          value={typeFilter || 'all'} 
+          onValueChange={(value) => setTypeFilter(value === 'all' ? '' : value)}
+        >
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="All Types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            {NOTE_TYPES.map((t) => (
+              <SelectItem key={t.value} value={t.value}>
+                {t.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search notes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-              data-cursor="hover"
-            />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {filteredNotes.map((note, index) => (
-              <motion.div
-                key={note._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-lg border p-4 hover:bg-accent/50 transition-colors"
-              >
-                <div className="flex-1 space-y-2 min-w-0">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-medium text-sm md:text-base break-words">{note.lessonName || 'Unknown Lesson'}</p>
-                      {note.isPremium && (
-                        <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 text-xs">
-                          Premium
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs md:text-sm text-muted-foreground mt-1 line-clamp-2 break-words">
-                      {stripHtml(note.notesText || note.content || '')}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs">
-                    {(note.notesImages?.length > 0 || note.images?.length > 0) && (
-                      <span className="flex items-center gap-1 text-muted-foreground">
-                        <ImageIcon className="h-3 w-3" />
-                        {(note.notesImages || note.images || []).length} image(s)
-                      </span>
-                    )}
-                    <span className="text-muted-foreground">
-                      Created: {new Date(note.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 self-start sm:self-auto">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleOpenSlideOver(note)}
-                    data-cursor="hover"
-                    className="touch-manipulation min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(note._id)}
-                    data-cursor="hover"
-                    className="touch-manipulation min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0"
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </motion.div>
-            ))}
-            {filteredNotes.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                No notes found. All notes are premium by default.
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Slide-over Panel */}
-      <AnimatePresence>
-        {isSlideOverOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-              onClick={handleCloseSlideOver}
-            />
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="fixed right-0 top-0 h-full w-full max-w-3xl bg-background border-l border-border z-50 overflow-y-auto"
-            >
-              <div className="sticky top-0 bg-background border-b border-border p-4 md:p-6 flex items-center justify-between">
-                <div className="flex-1 min-w-0 pr-2">
-                  <h2 className="text-xl md:text-2xl font-bold">
-                    {editingNote ? 'Edit Note' : 'Add New Note'}
-                  </h2>
-                  <p className="text-xs md:text-sm text-muted-foreground">
-                    Notes are premium-only content
-                  </p>
-                </div>
-                <Button variant="ghost" size="icon" onClick={handleCloseSlideOver} className="touch-manipulation min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex-shrink-0">
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-              <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="lesson">Lesson</Label>
-                  <Select
-                    value={formData.lessonId}
-                    onValueChange={(value) => setFormData({ ...formData, lessonId: value })}
-                  >
-                    <SelectTrigger data-cursor="hover">
-                      <SelectValue placeholder="Select a lesson" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {lessons.map((lesson) => (
-                        <SelectItem key={lesson._id} value={lesson._id}>
-                          {lesson.title} ({lesson.subject} - Ch. {lesson.chapter})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="class">Class</Label>
-                  <Select
-                    value={formData.class}
-                    onValueChange={(value) => setFormData({ ...formData, class: value })}
-                  >
-                    <SelectTrigger data-cursor="hover">
-                      <SelectValue placeholder="Select class" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="9th">9th</SelectItem>
-                      <SelectItem value="10th">10th</SelectItem>
-                      <SelectItem value="11th">11th</SelectItem>
-                      <SelectItem value="12th">12th</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="notesText">Notes Content</Label>
-                  <Textarea
-                    id="notesText"
-                    value={formData.notesText}
-                    onChange={(e) => setFormData({ ...formData, notesText: e.target.value })}
-                    placeholder="Enter notes content (supports HTML/Markdown)..."
-                    rows={12}
-                    required
-                    className="font-mono text-sm"
-                    data-cursor="hover"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    You can use HTML tags for formatting. For math formulas, use LaTeX or upload images.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="images">Notes Images (Math formulas, diagrams, etc.)</Label>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById('image-upload')?.click()}
-                        data-cursor="hover"
-                        className="touch-manipulation min-h-[44px] md:min-h-0"
-                      >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload Images
-                      </Button>
-                      <input
-                        id="image-upload"
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                      <span className="text-sm text-muted-foreground">
-                        {formData.notesImages.length} image(s) uploaded
-                      </span>
-                    </div>
-                    
-                    {formData.notesImages.length > 0 && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {formData.notesImages.map((image, index) => (
-                          <div
-                            key={index}
-                            className="relative group rounded-lg border overflow-hidden"
-                          >
-                            <img
-                              src={image}
-                              alt={`Note image ${index + 1}`}
-                              className="w-full h-32 object-cover"
-                            />
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="icon"
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => handleRemoveImage(index)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
+      {/* Table */}
+      {notes.length === 0 ? (
+        <EmptyState
+          icon={StickyNote}
+          title="No notes found"
+          description="Create notes with rich text, math formulas, and images"
+          action={
+            <Button onClick={() => openForm()}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Note
+            </Button>
+          }
+        />
+      ) : (
+        <>
+          <div className="bg-white rounded-lg border border-neutral-200 overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Subject</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Lesson</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {notes.map((note) => (
+                  <TableRow key={note._id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{note.title}</div>
+                        <div className="text-sm text-neutral-500 line-clamp-1">
+                          {truncate(note.summary || note.content, 50)}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{note.subject}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{note.type}</Badge>
+                    </TableCell>
+                    <TableCell className="text-neutral-500">
+                      {note.lesson?.title || '-'}
+                    </TableCell>
+                    <TableCell>
+                      {note.isPremium && <Badge className="mr-1">Premium</Badge>}
+                      <Badge variant={note.isVisible ? 'success' : 'secondary'}>
+                        {note.isVisible ? 'Visible' : 'Hidden'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-neutral-500">
+                      {formatDate(note.createdAt)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openForm(note)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setDeleteNote(note)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
-                <div className="rounded-lg border p-4 bg-amber-500/5">
-                  <div className="flex items-center gap-2 text-amber-600 dark:text-amber-500">
-                    <span className="text-sm font-medium">Premium Content</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    All notes are premium-only and only accessible to subscribed users.
-                  </p>
-                </div>
+          <div className="mt-4">
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
+          </div>
+        </>
+      )}
 
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleCloseSlideOver}
-                    className="flex-1 touch-manipulation min-h-[44px] md:min-h-0"
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" className="flex-1 touch-manipulation min-h-[44px] md:min-h-0" data-cursor="hover" disabled={submitting}>
-                    {submitting ? 'Saving...' : (editingNote ? 'Update' : 'Create')}
-                  </Button>
-                </div>
-              </form>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      {/* Create/Edit Dialog */}
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingNote ? 'Edit Note' : 'Create Note'}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title *</Label>
+              <Input
+                id="title"
+                {...register('title', { required: 'Title is required' })}
+                placeholder="e.g., Newton's Laws of Motion"
+              />
+              {errors.title && (
+                <p className="text-sm text-red-600">{errors.title.message}</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <Label>Subject *</Label>
+                <Select
+                  value={watchSubject}
+                  onValueChange={(value) => setValue('subject', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SUBJECTS.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Class *</Label>
+                <Select
+                  value={watchClass}
+                  onValueChange={(value) => setValue('class', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CLASSES.map((c) => (
+                      <SelectItem key={c.value} value={c.value}>
+                        {c.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Chapter *</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  {...register('chapter', {
+                    required: true,
+                    valueAsNumber: true,
+                    min: 1,
+                  })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Type</Label>
+                <Select
+                  value={watchType}
+                  onValueChange={(value) => setValue('type', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {NOTE_TYPES.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Linked Lesson (optional)</Label>
+              <Select
+                value={watchLesson || 'none'}
+                onValueChange={(value) => setValue('lesson', value === 'none' ? '' : value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a lesson" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No lesson</SelectItem>
+                  {lessons.map((lesson) => (
+                    <SelectItem key={lesson._id} value={lesson._id}>
+                      {lesson.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="content">Content * (supports Markdown + LaTeX)</Label>
+              <RichTextEditor
+                value={watchContent}
+                onChange={(value) => setValue('content', value)}
+                placeholder="Write your note content here. Use $formula$ for math."
+                rows={12}
+              />
+              {errors.content && (
+                <p className="text-sm text-red-600">{errors.content.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="summary">Summary</Label>
+              <Textarea
+                id="summary"
+                {...register('summary')}
+                placeholder="Brief summary of the note"
+                rows={2}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags (comma-separated)</Label>
+              <Input
+                id="tags"
+                {...register('tags')}
+                placeholder="e.g., mechanics, motion, force"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Label htmlFor="isVisible">Visible</Label>
+              <Switch
+                id="isVisible"
+                checked={watchIsVisible}
+                onCheckedChange={(checked) => setValue('isVisible', checked)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Label htmlFor="isPremium">Premium Content</Label>
+              <Switch
+                id="isPremium"
+                checked={watchIsPremium}
+                onCheckedChange={(checked) => setValue('isPremium', checked)}
+              />
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={closeForm}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                loading={createMutation.isPending || updateMutation.isPending}
+              >
+                {editingNote ? 'Update' : 'Create'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={!!deleteNote}
+        onOpenChange={() => setDeleteNote(null)}
+        title="Delete Note"
+        description={`Are you sure you want to delete "${deleteNote?.title}"? This action cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={handleDelete}
+        loading={deleteMutation.isPending}
+      />
     </div>
-    </>
   )
 }
